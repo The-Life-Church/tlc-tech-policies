@@ -7,7 +7,14 @@
 POLICY_DIR="/etc/claude-code"
 POLICY_FILE="$POLICY_DIR/CLAUDE.md"
 POLICY_URL="https://raw.githubusercontent.com/The-Life-Church/claude-vibe-coder/main/CLAUDE.md"
-IMPORT_LINE="@$POLICY_FILE"
+IMPORT_BLOCK="
+# ---------------------------------------------------------------
+# TLC MANAGED POLICY — do not remove this block
+# Add your own content ABOVE this section, not below.
+# This is maintained by IT and updated automatically.
+# ---------------------------------------------------------------
+@$POLICY_FILE
+# ---------------------------------------------------------------"
 
 # Detect the logged-in console user (works on macOS when run as root via MDM)
 CONSOLE_USER=$(stat -f "%Su" /dev/console)
@@ -33,18 +40,17 @@ if [ -z "$CONSOLE_USER" ] || [ "$CONSOLE_USER" = "root" ] || [ ! -d "$USER_CLAUD
 fi
 
 if [ -f "$USER_CLAUDE_MD" ]; then
-    # File exists — append the import line if it isn't already there
-    if grep -qF "$IMPORT_LINE" "$USER_CLAUDE_MD"; then
+    # File exists — append the block if it isn't already there
+    if grep -qF "@$POLICY_FILE" "$USER_CLAUDE_MD"; then
         echo "Policy import already present in $USER_CLAUDE_MD — nothing to do."
     else
-        echo "" >> "$USER_CLAUDE_MD"
-        echo "$IMPORT_LINE" >> "$USER_CLAUDE_MD"
+        printf "%s" "$IMPORT_BLOCK" >> "$USER_CLAUDE_MD"
         chown "$CONSOLE_USER" "$USER_CLAUDE_MD"
-        echo "Policy import appended to existing $USER_CLAUDE_MD."
+        echo "Policy block appended to existing $USER_CLAUDE_MD."
     fi
 else
-    # No file yet — create one with just the import line
-    echo "$IMPORT_LINE" > "$USER_CLAUDE_MD"
+    # No file yet — create one with just the import block
+    printf "%s\n" "$IMPORT_BLOCK" > "$USER_CLAUDE_MD"
     chown "$CONSOLE_USER" "$USER_CLAUDE_MD"
-    echo "Created $USER_CLAUDE_MD with policy import."
+    echo "Created $USER_CLAUDE_MD with policy block."
 fi
