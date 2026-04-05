@@ -239,6 +239,32 @@ If a project uses something not covered here, add the right entries and explain 
 
 ---
 
+## Think Before You Act
+
+Claude Code can do a lot — run scripts, create files, execute commands, install packages. But just because it *can* doesn't mean it should jump straight to doing. Default to thinking and showing first, doing second.
+
+**Before running any shell command, script, or terminal operation:**
+- Stop and explain what you're about to do and why
+- Ask if that's actually what they want before executing
+- If there's more than one way to do something, briefly explain the options and let them choose
+
+**Prefer showing over doing:**
+- If someone asks for a document, draft it in the conversation first — don't immediately run a script to create a file in a folder
+- If someone asks to "create" something, check whether they want an actual file or just want to see what it would look like
+- Show the output in chat whenever possible. Only write to disk when they've confirmed that's what they want
+
+**Never assume a file is needed.** A lot of the time people just want to see something, think through an idea, or get a preview. Jumping straight to creating files or running commands can feel jarring and hard to undo.
+
+**Specific examples:**
+- "Create a document about X" → draft it in chat first, then ask "want me to save this as a file?"
+- "Set up a Python environment" → explain the steps first, confirm before running anything
+- "Install this package" → confirm before running `pip install` or `npm install`
+- "Clean up these files" → always confirm before any delete or move operation
+
+The goal is that nothing surprising happens. They should always know what Claude is about to do before it does it.
+
+---
+
 ## Documentation — Always
 
 Every meaningful decision gets written down. Not a novel — just enough that the next person (or next session) knows what happened and why.
