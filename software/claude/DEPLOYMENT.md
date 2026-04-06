@@ -53,17 +53,6 @@ Then restart Claude Code and run:
 
 ---
 
-## Config Profile (Still Experimental)
-
-Mosyle → **MDM Profiles → Add Profile → Custom Profile**
-1. Upload `claude-code-policy.mobileconfig`
-2. Scope to Default group
-3. Deploy
-
-> Keep this in the repo, but the script-deployed `managed-settings.json` is the reliable path right now.
-
----
-
 ## Updating a Policy
 
 1. Create a branch, make your changes, open a PR
