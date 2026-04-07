@@ -9,9 +9,21 @@ This folder contains the managed Claude Code policies deployed to all Life Churc
 ### `CLAUDE.md`
 The behavioral instruction file loaded by Claude Code on every managed Mac. It shapes how Claude behaves across all projects — things like slowing down before making changes, asking questions before building, knowing when to loop in IT, and keeping work local until it's ready to go further.
 
-This file is pulled from GitHub daily by Mosyle and placed at `/etc/claude-code/CLAUDE.md`. It's then imported at the bottom of each user's personal `~/.claude/CLAUDE.md` so their own preferences are preserved above it.
-
 **To view the live file:** [software/claude/CLAUDE.md](./CLAUDE.md)
+
+#### How the global CLAUDE.md works
+
+Claude Code natively supports a global instruction file at `~/.claude/CLAUDE.md` on each user's machine. When Claude Code starts, it automatically reads this file and loads it as persistent context — no project setup required. Users can put personal preferences there and Claude will carry them across every project they work in.
+
+Anthropic documents this as part of Claude Code's memory system: [docs.anthropic.com/en/docs/claude-code/memory](https://docs.anthropic.com/en/docs/claude-code/memory)
+
+Our managed policy takes advantage of this. The deploy script writes our policy file to `/etc/claude-code/CLAUDE.md` on the device, then appends an import line to the user's `~/.claude/CLAUDE.md`:
+
+```
+@/etc/claude-code/CLAUDE.md
+```
+
+Claude Code follows that `@`-style import and loads our managed file as part of the global context. The user's own content stays above it and is never overwritten — our policy just gets added to the bottom. If we update `CLAUDE.md` in GitHub and merge to `main`, Mosyle refreshes `/etc/claude-code/CLAUDE.md` on the next daily run and the user picks it up automatically.
 
 ---
 
