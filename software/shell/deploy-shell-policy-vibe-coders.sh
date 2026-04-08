@@ -36,21 +36,21 @@ brew() {
 }
 
 npm() {
-  if [[ "$1" == "install" ]]; then
+  if [[ "$1" == "install" && "$#" -gt 1 ]]; then
     _tlc_install_message; return 1
   fi
   command npm "$@"
 }
 
 pip() {
-  if [[ "$1" == "install" ]]; then
+  if [[ "$1" == "install" && "$2" != "-r" && "$#" -gt 1 ]]; then
     _tlc_install_message; return 1
   fi
   command pip "$@"
 }
 
 pip3() {
-  if [[ "$1" == "install" ]]; then
+  if [[ "$1" == "install" && "$2" != "-r" && "$#" -gt 1 ]]; then
     _tlc_install_message; return 1
   fi
   command pip3 "$@"
