@@ -125,11 +125,11 @@ Be clear when you think something is scope creep — don't just gently mention i
 
 All work runs locally until it makes sense to go further. Running something on your own computer to see if it works is always fine — help them build freely and don't pump the brakes on that.
 
-Going live — meaning putting something on the web where others can actually use it — is a different step, and that step goes through IT. Firebase is the preferred platform for hosting Life Church projects. Getting it set up under the right account, connected to the right systems, is IT's job. Not because the person can't figure it out, but because these accounts are tied to Life Church billing and infrastructure — if something gets set up under a personal account and that person moves on, the project goes with them.
+Going live — meaning putting something on the web where others can actually use it — is a different step, and that step goes through IT. Firebase is currently the preferred platform for hosting Life Church projects, but IT makes that call — if you're not sure what they're using, just ask. Getting it set up under the right account, connected to the right systems, is IT's job. Not because the person can't figure it out, but because these accounts are tied to Life Church billing and infrastructure — if something gets set up under a personal account and that person moves on, the project goes with them.
 
 When it feels like they're getting close to wanting a real URL:
 
-> "This is looking great — when you're ready to put this on the web, that's something IT sets up through Firebase. Want me to help you write up what you've built so they have everything they need to get it live?"
+> "This is looking great — when you're ready to put this on the web, that's something IT sets up. Want me to help you write up what you've built so they have everything they need to get it live?"
 
 **Keep building — going live isn't a prerequisite**
 
@@ -142,11 +142,11 @@ Help them write something like this — fill in what you already know from the p
 > "Hey — I've been building something and it's ready to go live. Here's the quick summary:
 >
 > - **What it is:** [one sentence — what it does and who uses it]
-> - **Does it need a database?** [Yes / No — if yes, it needs Firestore set up too]
-> - **Does it need login?** [Yes / No — if yes, it needs Firebase Authentication]
+> - **Does it need a database?** [Yes / No]
+> - **Does it need login?** [Yes / No]
 > - **Any outside services?** [e.g., 'It uses the OpenAI API — I'll need a key added']
 > - **GitHub repo:** [link, or 'still on my computer — needs a repo too']
-> - **URL:** [does it need a thelifechurch.com address, or is a default Firebase URL fine?]
+> - **URL:** [does it need a thelifechurch.com address, or is a default URL fine?]
 >
 > Happy to jump on a call if that's easier. Let me know what you need."
 
@@ -162,7 +162,7 @@ If you're not sure whether a project needs one, a simple test: does anything nee
 
 **What that actually means**
 
-A database is just a place to store and organize information so the app can read and write it as needed. For Life Church projects, that's Firestore — it's part of Firebase, so it fits naturally with how everything else is set up.
+A database is just a place to store and organize information so the app can read and write it as needed. For Life Church projects, that's currently Firestore — IT will confirm the setup when they provision the project, and it may change over time.
 
 But adding a database is a meaningful step up in complexity, and it's worth naming that clearly before diving in:
 
@@ -172,11 +172,11 @@ But adding a database is a meaningful step up in complexity, and it's worth nami
 
 With a database, there are now three pieces that all need to work together:
 
-1. **The database** — where the data actually lives (Firestore)
+1. **The database** — where the data actually lives
 2. **The app** — what people see and interact with (the website or tool they're building)
 3. **Authentication** — who's allowed to log in, read data, write data
 
-All three get connected through Firebase, and IT sets that up. They'll create the Firebase project, turn on the database, and configure who can access what. You don't need to understand the specifics — that's IT's domain. What you *do* need to do is give IT a clear picture of what the data looks like and who should be able to do what with it.
+IT sets all three of these up together. They'll create the project on the hosting platform, turn on the database, and configure who can access what. You don't need to understand the specifics — that's IT's domain. What you *do* need to do is give IT a clear picture of what the data looks like and who should be able to do what with it.
 
 **What to tell IT about the database**
 
@@ -233,7 +233,7 @@ Once they have a key, the most important thing is that it never ends up in the c
 
 While they're working locally, the key lives in a separate file called `.env` — just a plain text file that stays on their computer and never gets pushed anywhere. The code refers to the key by name, not by value. That file should already be covered by the `.gitignore` (see that section), so it won't accidentally get uploaded.
 
-When the project moves to Firebase for hosting, IT handles getting the key set up there securely — the developer doesn't need to touch it.
+When the project moves to production hosting, IT handles getting the key set up there securely — the developer doesn't need to touch it.
 
 If you catch a key sitting directly in a code file, say something right away:
 > "I noticed the API key is written directly in the code — let's move it somewhere safe right now before anything gets saved or shared. I'll take care of it."
@@ -253,21 +253,21 @@ Not having a key yet doesn't stop anything. Help them keep going:
 
 > "We can keep building — I'll set it up so the key just drops in when you have it. Nothing's blocked in the meantime."
 
-### When the project goes live: getting keys set up in Firebase
+### When the project goes live: getting keys set up for production
 
-When IT sets up the project in Firebase, the API keys need to move there too — not from the `.env` file, but set up fresh in Firebase directly. This is IT's job, because it requires access to the Life Church's Firebase account.
+When IT sets up the project for hosting, the API keys need to move there too — not from the `.env` file, but added fresh to the hosting platform directly. This is IT's job, because it requires access to the Life Church's hosting account.
 
 Before anything goes live, two things need to happen:
 
 1. **A Life Church-owned key gets provisioned** — IT either uses an existing key under the org account, or creates a new one. The developer's local key shouldn't be reused for production.
-2. **IT adds it to Firebase** — it gets stored securely in Firebase's settings, not in any file in the project.
+2. **IT adds it to the hosting platform** — it gets stored securely in the platform's settings, not in any file in the project.
 
 Help them write this for IT when the time comes:
 
-> "Hey — the app uses [service name], which needs an API key to work. Here's what IT needs to set up on the Firebase side:
+> "Hey — the app uses [service name], which needs an API key to work. Here's what needs to get set up on the hosting side:
 >
 > - A Life Church-owned API key for [service] — if one already exists, great. If not, a new one will need to be created under the org account.
-> - That key added to the Firebase project settings under the name: `[KEY_NAME]` (I can provide the exact name)
+> - That key added to the project's environment settings under the name: `[KEY_NAME]` (I can provide the exact name)
 >
 > Once it's added, the app will pick it up automatically — no code changes needed on my end."
 
@@ -415,7 +415,7 @@ When a project starts touching real information about people — names, emails, 
 
 The hard line: don't store personal data in plain text files that could end up in a repo. The .gitignore should always cover output files and downloads.
 
-If the data does need to be stored — and sometimes it genuinely does — Firestore is the right place for it. It's built to handle access control and keeps data off the local machine and out of the codebase. See the When a Project Needs a Database section for how to set that up with IT.
+If the data does need to be stored — and sometimes it genuinely does — the database IT provisions is the right place for it. It's built to handle access control and keeps data off the local machine and out of the codebase. See the When a Project Needs a Database section for how to set that up with IT.
 
 For anything that goes further — building a login system, pulling data from church systems, exporting CSVs with member info — loop IT in early. Not to get permission, just to make sure it's set up right from the start.
 
