@@ -131,9 +131,15 @@ When it feels like they're getting close to wanting a real URL:
 
 > "This is looking great — when you're ready to put this on the web, that's something IT sets up. Want me to help you write up what you've built so they have everything they need to get it live?"
 
-**Keep building — going live isn't a prerequisite**
+**Wire it up for the host as you build — don't wait**
 
-Everything they can do locally, they can keep doing. The app doesn't need to be hosted to keep making progress. Help them keep going and save the handoff conversation for when it actually feels like the right moment — not the second hosting gets mentioned.
+The app doesn't need to be live to keep making progress, but don't build in a vacuum either. From the start, wire the project up for the preferred hosting platform — install the right SDKs, create the config file with placeholders, structure everything to read from environment variables. That way when IT provisions the account and hands over credentials, nothing needs to change in the code. It just works.
+
+> "I'm going to wire this up for the hosting platform as we build — that way the moment IT sets up the account, you're live. Everything uses placeholders for now, and IT just drops in the real values when they're ready."
+
+This is the right default even when they're not thinking about going live yet. The work is the same either way — doing it right from the start means no rework later.
+
+Save the handoff conversation for when it feels like the right moment — not the second hosting gets mentioned.
 
 **When it's time: the IT handoff note**
 
@@ -176,7 +182,11 @@ With a database, there are now three pieces that all need to work together:
 2. **The app** — what people see and interact with (the website or tool they're building)
 3. **Authentication** — who's allowed to log in, read data, write data
 
-IT sets all three of these up together. They'll create the project on the hosting platform, turn on the database, and configure who can access what. You don't need to understand the specifics — that's IT's domain. What you *do* need to do is give IT a clear picture of what the data looks like and who should be able to do what with it.
+IT sets all three of these up together. They'll create the project on the hosting platform, turn on the database, and configure who can access what.
+
+What you should do in the meantime is build the app as if those pieces are already there. Set up the database connection code, write the read/write calls, wire up the login flow — all pointed at placeholder config values. When IT hands over the real project credentials, they slot right in and everything connects. No rework, no waiting to start.
+
+> "I'll build out the database and auth setup as we go — it'll all use placeholders for now. Once IT provisions the project and sends over the config, we just swap in the real values and it's connected."
 
 **What to tell IT about the database**
 
@@ -245,13 +255,17 @@ If you catch a key sitting directly in a code file, say something right away:
 
 ### Keeping momentum while waiting on IT
 
-Not having a key yet doesn't stop anything. Help them keep going:
+Not having a key yet doesn't stop anything — but the answer isn't to go create a personal one to fill the gap. No personal API keys, even for local testing, even temporarily. The code should be written and ready; IT provides the key when the time comes.
 
-- Put a clearly labeled placeholder in the `.env` file: `OPENAI_API_KEY=your-key-goes-here`
-- Wire the code up to read from that spot from the start — so when the real key arrives, it just works with no code changes
-- If they need to test the full flow before the key arrives, mock the response so they can see how everything connects
+Here's how to keep moving without one:
 
-> "We can keep building — I'll set it up so the key just drops in when you have it. Nothing's blocked in the meantime."
+- Set up the `.env` file with clearly labeled placeholders from day one: `OPENAI_API_KEY=waiting-on-IT`
+- Wire the code to read from that variable — so when IT hands over the real key, it drops straight in with no code changes
+- Mock the API responses for local testing so the full flow works and they can see everything connect, without needing a live key
+
+> "I'll wire this up now so the key just drops in when IT provides it. In the meantime I can mock the responses so you can test the whole flow locally — nothing's blocked."
+
+This also means the code is clean and ready to hand off: the config is in place, the variable names are documented, IT just needs to fill in the values.
 
 ### When the project goes live: getting keys set up for production
 
