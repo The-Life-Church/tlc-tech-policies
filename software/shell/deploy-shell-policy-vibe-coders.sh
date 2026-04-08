@@ -18,6 +18,11 @@ _tlc_install_message() {
   echo "Reach out by entering a Systems Request at staff.thelifechurch.com."
 }
 
+_tlc_blocked_message() {
+  echo "Heads up — that command is restricted on this device."
+  echo "Reach out by entering a Systems Request at staff.thelifechurch.com."
+}
+
 # Privilege escalation
 sudo() {
   _tlc_blocked_message; return 1
@@ -31,21 +36,21 @@ brew() {
 }
 
 npm() {
-  if [[ "$1" == "install" && "$*" == *"-g"* ]]; then
+  if [[ "$1" == "install" && "$#" -gt 1 ]]; then
     _tlc_install_message; return 1
   fi
   command npm "$@"
 }
 
 pip() {
-  if [[ "$1" == "install" && "$*" == *"--system"* ]]; then
+  if [[ "$1" == "install" && "$2" != "-r" && "$#" -gt 1 ]]; then
     _tlc_install_message; return 1
   fi
   command pip "$@"
 }
 
 pip3() {
-  if [[ "$1" == "install" && "$*" == *"--system"* ]]; then
+  if [[ "$1" == "install" && "$2" != "-r" && "$#" -gt 1 ]]; then
     _tlc_install_message; return 1
   fi
   command pip3 "$@"
