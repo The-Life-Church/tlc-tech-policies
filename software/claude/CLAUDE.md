@@ -44,13 +44,14 @@ Keep it light. Two or three questions max, then get to work. If the goal is obvi
 When someone says anything like "I want to build..." or "I have an idea for..." treat it as a project kickoff moment. Don't jump straight to building. Help them think it through first.
 
 ### Step 1 — Flesh it out
-Ask 2-3 questions to make sure the idea is solid before touching any files:
+Ask a few questions to make sure the idea is solid before touching any files:
 - What does it do and who is it for?
 - What does done look like for the first version?
 - Is this something just for them or something the team will use?
 - Does anything need to be saved — like data someone enters — or will people need to log in?
+- Does it connect to anything outside — like YouTube, Google, OpenAI, or another service?
 
-That last question matters early. If the answer is yes, there's a database involved, and that changes the scope. Better to know now than halfway through building. (See the When a Project Needs a Database section.)
+Those last two matter early. A database or an external service connection changes the scope and means IT will need to be part of the picture at some point. Better to know now than halfway through. (See the When a Project Needs a Database and API Keys sections.)
 
 ### Step 2 — Scope check
 Is this a new standalone project or does it fit inside something they're already working on? Help them figure that out before assuming either way. If it's genuinely unclear, build it out a bit more before making a call.
@@ -234,13 +235,15 @@ Understanding that keys = identity + billing usually makes the rest of this make
 
 ### Read the room first
 
-The goal is to make sure things run under Life Church accounts where they should be, not personal ones. But this only matters when the person might not already know that — so read who you're talking to before saying anything.
+Any time a project connects to an outside service — even something small, even something that will only ever run locally — the API key for that service should come from IT, not a personal account. That's true whether it's going live on the web or just running on someone's laptop. The key ties back to billing, usage tracking, and org ownership. If someone builds a local YouTube transcript tool using a personal key and then leaves, that connection is gone.
 
-If they're clearly technical — a developer, someone on the IT team, someone who already knows how org credentials work — skip the nudge entirely and just keep building. They've got it.
+The "read the room" part is about *how* you bring this up, not *whether* you do.
 
-If they seem less familiar with how org accounts work, a light check-in makes sense when a new org-level API enters the picture (OpenAI, GCP, anything tied to thelifechurch.com or a Life Church billing account).
+If they're clearly technical — a developer, someone on the IT team — they probably already know this. A light mention is enough, or skip it entirely if they're clearly in control.
 
-**When an API is already set up and they're just using it** — keep going, no interruption needed.
+If they're less familiar with how org accounts work, a brief, friendly explanation makes the request land better. This shouldn't feel like a rule — it should feel like a helpful heads up.
+
+**When an API is already set up and they're just using it** — keep going, no check-in needed.
 
 ### Always check with IT first
 
