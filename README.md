@@ -12,7 +12,8 @@ This repo contains policies, configuration files, and deployment scripts that IT
 tlc-tech-policies/
 ├── software/
 │   ├── claude/       ← Claude Code behavioral policy and permission settings
-│   └── shell/        ← Terminal shell restrictions deployed via Mosyle
+│   ├── shell/        ← Terminal shell restrictions deployed via Mosyle
+│   └── xcode/        ← Xcode Command Line Tools silent installer
 └── hardware/         ← Mac hardware and device configuration (coming soon)
 ```
 
@@ -57,17 +58,40 @@ Restricts dangerous terminal commands on managed Macs via `/etc/zshrc`. Two poli
 
 | File | Group | Blocks |
 |---|---|---|
-| `shell-policy-vibe-coders.zsh` | General staff (no terminal) | Package installs only — safety net for VS Code terminal |
-| `shell-policy-default.zsh` | Claude Code users (terminal access) | Full deny list — all restricted commands |
+| `deploy-shell-policy-vibe-coders.sh` | Vibe coders (limited terminal) | `sudo`, `brew install`, package installs (`npm install <pkg>`, `pip install <pkg>`) — dependency restores allowed |
+| `deploy-shell-policy-default.sh` | General staff (no terminal) | Full terminal block — session exits immediately with IT contact message |
 
 ### Deployment
 
 **Mosyle → Custom Scripts → Add Script** (once per group)
-- Upload `deploy-shell-policy-vibe-coders.sh`, scope to vibe coder group
-- Upload `deploy-shell-policy-default.sh`, scope to Claude Code users group
+- Scope `deploy-shell-policy-vibe-coders.sh` to vibe coder group
+- Scope `deploy-shell-policy-default.sh` to general staff group
 - Both run as root on a recurring schedule
 
-When a policy changes: update the `.zsh` file and merge to `main`. Mosyle picks it up on the next scheduled run.
+When a policy changes: update the deploy script and merge to `main`. Mosyle picks it up on the next scheduled run.
+
+---
+
+## software/xcode
+
+Silent installer for Xcode Command Line Tools, deployed via Mosyle. Runs headless using the `softwareupdate` trick (no GUI prompt). Skips if CLT is already installed. Logs to `/tmp/clt-install-<timestamp>.log` — cleaned up on success, kept on failure.
+
+| File | Purpose |
+|---|---|
+| `install-clt.sh` | CLT silent install script |
+
+### Deployment
+
+Mosyle → Custom Scripts → paste:
+```bash
+# TLC Xcode Command Line Tools — Silent Install
+# Installs CLT via softwareupdate (headless, no GUI prompt).
+# Skips if already installed. Logs to /tmp/clt-install-<timestamp>.log.
+# Log file is cleaned up on success, kept on failure for troubleshooting.
+curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/xcode/install-clt.sh" | bash
+```
+
+Scope to any device group that needs CLT (e.g., vibe coders, developers). Can run as a one-time or recurring script.
 
 ---
 
