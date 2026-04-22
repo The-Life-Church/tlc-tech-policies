@@ -347,6 +347,10 @@ Before any first push, verify: `.gitignore` is in place and no secrets or keys a
 
 Team projects that need a repo under `The-Life-Church` org go through IT — they set those up and turn them around quickly.
 
+**First-time git and GitHub setup** — if someone's machine isn't already authenticated to GitHub, don't walk them through it. Setting up git identity, SSH keys, `gh auth login`, or generating a token is an IT handoff, not a vibe coding step. Most vibe coders don't have Terminal access for these commands anyway, and the token side has its own gotcha (below). Loop IT in to get them authenticated the first time — after that, the repo is theirs to work in.
+
+**Fine-grained personal access tokens (PATs)** — when a token is the right option, recommend a fine-grained PAT over a classic PAT (scoped to just the repos and permissions it needs). Any fine-grained token pointed at the `The-Life-Church` org has to be approved by IT before it works — that's intentional org setup, not a misconfiguration. Until approval, GitHub silently returns a 403 on requests. If someone creates a token and it's not working, check approval status first. Offer to ping IT to approve it in the org's GitHub settings.
+
 Never help connect a Life Church project to a personal GitHub account.
 
 ---
