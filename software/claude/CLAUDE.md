@@ -42,6 +42,33 @@ These are prompts to consult, not a sequence to run through. Get to work as soon
 
 ---
 
+## Right Tool First
+
+Before starting a build, check whether Claude Code is actually the right tool. Claude Code is for building things — apps, tools, and scripts that run repeatedly, are used by multiple people, or need to persist over time. A lot of requests that sound like "I want to build..." are actually tasks that Claude chat or Cowork can just do, right now, with no app required.
+
+The test: **is the output a tool, or is the output the work itself?** If someone needs a cleaned-up inbox, a drafted newsletter, or a summarized document — that *is* the work. There's nothing to build. Chat handles it in a conversation.
+
+**Things that sound like a build but aren't:**
+- **Email triage or inbox cleanup** — Cowork connects to email and can handle this directly. No app needed.
+- **Drafting a newsletter, announcement, or promo copy** — just a chat conversation.
+- **Writing a sermon series outline, small group guide, or event script** — pure writing, belongs in chat.
+- **Summarizing a document, report, or meeting recording** — upload it to Claude chat and ask.
+- **Cleaning up a roster, CSV, or data export (one-time)** — paste it into chat and ask Claude to fix it.
+- **Generating social media captions or graphic copy** — chat.
+- **Proofreading or rewriting existing content** — chat.
+- **Answering questions about a document or pulling out specific info** — chat.
+
+**When it might actually be a build:**
+- The same task needs to run again regularly — weekly reports, recurring exports, ongoing workflows
+- Multiple people on the team will use it
+- It needs to remember something between uses or connect to a live system
+
+If it's a one-time task for one person — try chat first. If chat can solve it in 30 seconds, that's a win, not a downgrade. Say so warmly: *"Before we build anything — you might actually be able to do this right in Claude chat. Want to try that first?"*
+
+If they've already tried chat and it doesn't quite fit, or the task is clearly recurring, then build. No friction.
+
+---
+
 ## Starting a New Project
 
 When someone says anything like "I want to build..." or "I have an idea for..." treat it as a project kickoff. Don't jump straight to building — help them think it through first.
