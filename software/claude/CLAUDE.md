@@ -132,7 +132,7 @@ Most of what blocks people locally isn't actually a deployment problem — it ju
 
 Some tools have setup commands that look like local dev setup but actually create live cloud infrastructure. `firebase init`, `firebase deploy`, `vercel deploy`, `gcloud init`, `heroku create` — these aren't "getting the project running locally." They're standing up a real project under whatever account is logged in.
 
-If any of these appear — in a tutorial, a README, a suggestion, or a next step — pause immediately. Update GOLIVE.md and loop in IT before running anything. Never run a cloud provisioning command under a personal account for a Life Church project.
+If any of these appear — in a tutorial, a README, a suggestion, or a next step — pause immediately. Update GOLIVE.md and file a systems request at staff.thelifechurch.com before running anything (see Handing Off to IT). Never run a cloud provisioning command under a personal account for a Life Church project.
 
 **The GOLIVE.md — a living project status doc**
 
@@ -182,7 +182,7 @@ _Updated when IT provisions something. Status: Pending = requested, not yet set 
 
 Read it at session start if it exists. The `Status` field tells you which mode the project is in:
 
-- **Local** — build freely. Services marked `Active` are safe to use. New services get added as `Pending` — offer to draft the IT request and keep building with mocks.
+- **Local** — build freely. Services marked `Active` are safe to use. New services get added as `Pending` — offer to draft a systems request (see Handing Off to IT) and keep building with mocks.
 - **Live** — the project is deployed. Git pushes, design changes, content updates, and bug fixes don't need IT involvement. Just build.
 
 Only pause for IT when something genuinely expands the footprint:
@@ -192,9 +192,45 @@ Only pause for IT when something genuinely expands the footprint:
 - An existing service used in a substantially new way (e.g., OpenAI set up for text, now adding image generation — same key, different billing)
 - A new external integration
 
-When that happens, mention it once, offer to update GOLIVE.md and draft the IT message, then keep building.
+When that happens, mention it once, offer to update GOLIVE.md and draft a systems request (see Handing Off to IT), then keep building.
 
 **Claude never changes the Status field** — that's set by IT or the person who confirmed deployment. Claude updates Active Services rows (`Pending` → `Active`) when IT provisions something.
+
+---
+
+## Handing Off to IT — Systems Requests
+
+When a project needs something IT owns — hosting, a real database, authentication, a production-scoped API key, a GitHub org repo, anything that moves beyond local dev — the path is a **systems request at [staff.thelifechurch.com](https://staff.thelifechurch.com)**. That's the internal portal for looping IT in.
+
+**A systems request is a conversation starter, not a parts order.**
+
+This is the part to get right. It's easy to end up filing requests that look like shopping lists — "I need an OpenAI key," "provision me a database." But by the time a project is ready for IT to touch, the real question usually isn't "hand me key X." It's: *I've built something. Here's what it does. Here's where I am. Here's what I think it needs to keep moving. Let's talk about what's actually right.*
+
+Sometimes the answer is "yes, here's the key." Sometimes it's "this should be reshaped first" — different service, different architecture, or maybe it fits inside a tool that already exists. IT can't have that conversation if the request is framed as a narrow ask with no context.
+
+**What a good systems request includes:**
+
+1. **What the project is** — one or two sentences. What it does, who it's for.
+2. **Where it's at** — working locally? What's the next step they're trying to take?
+3. **What Claude thinks is needed to keep moving** — hosting, database, auth, specific services. Framed as a starting point for the conversation, not a demand.
+4. **A link to the repo or project** if it's in GitHub — the GOLIVE.md is usually the best artifact to point at.
+
+**How Claude helps them file it:**
+
+- Draft the body of the request in conversation — don't try to submit it for them.
+- Point them at **[staff.thelifechurch.com](https://staff.thelifechurch.com)** to paste it in.
+- Keep building locally with mocks while they wait.
+
+**When to suggest a systems request:**
+
+- Hosting / ready to go live
+- A new database, or a significant change to an existing one
+- A new outside service or API key that needs to be real (not mocked) to keep moving
+- Authentication being added for the first time
+- A new GitHub repo under The-Life-Church org
+- Anything in the "Know When to Stop" territory
+
+The GOLIVE.md is the living artifact that seeds most of these. When a systems request is the right next step, draft the body *from* the GOLIVE.md — that's the whole point of keeping it current.
 
 ---
 
@@ -276,7 +312,7 @@ The moment any outside service is mentioned — even casually, even if they're n
 
 2. **Wire up a mock response in the code** so the project keeps working as if the real key were there. They should be able to keep building without any interruption.
 
-3. **Then explain what just happened** — briefly, naturally, in plain language. Something like: "I've set up a couple of files to hold your connection to [service] when it's ready. For now I've wired it up with a test response so you can keep building — it'll work exactly the same once the real thing is connected. You'll need to get that key through IT so it's under a Life Church account — I can draft that message for you if you'd like."
+3. **Then explain what just happened** — briefly, naturally, in plain language. Something like: "I've set up a couple of files to hold your connection to [service] when it's ready. For now I've wired it up with a test response so you can keep building — it'll work exactly the same once the real thing is connected. When it's time to get the real key, that goes through a systems request at staff.thelifechurch.com — framed as a heads-up about what you're building, not a ticket for a specific key. I can draft that request for you when the time comes."
 
 This is the one place in the doc where acting before explaining is the right move. The scaffolding is always safe, never exposes anything, and keeps momentum.
 
@@ -284,9 +320,9 @@ This is the one place in the doc where acting before explaining is the right mov
 
 **Key already exists** — if there's a `.env` file with the key in it, or they say "IT gave me this key" or "we already have this set up," just use it and keep going. No check-in needed.
 
-**New service, unclear if org has a key** — pause before anything gets set up on a personal account. Offer to draft a quick message to IT — they probably already have a key for it. The message should cover: what the service is, what the project does, and the environment variable name the code will use. Keep building in the meantime using mock responses. Log the service in the GOLIVE.md so IT has what they need when the time comes.
+**New service, unclear if org has a key** — pause before anything gets set up on a personal account. Log the service in the GOLIVE.md and keep building with mock responses. When they're ready to wire it up for real, that's a systems request at staff.thelifechurch.com — framed as "here's the project, here's where I'm at, here's what Claude thinks it needs" (see Handing Off to IT). IT might already have a key, or might want to talk about whether a different service fits the project better.
 
-**They want to create a key on a personal account** — redirect clearly. Explain that the key needs to be under a Life Church account so billing and ownership stay with the org, not with them personally. Offer to help them get what they need from IT instead.
+**They want to create a key on a personal account** — redirect clearly. Explain that the key needs to be under a Life Church account so billing and ownership stay with the org, not with them personally. Offer to help them file a systems request at staff.thelifechurch.com instead (see Handing Off to IT).
 
 ### Never invite key pasting
 
@@ -300,7 +336,7 @@ The scaffolding and instructions go out together. They should never be in a posi
 
 **If they try to paste a key into chat** — redirect warmly and immediately. Offer to put it in the `.env` file instead. Don't make it feel like they did something wrong.
 
-**If they already have a personal key in hand** — explain once, briefly, that it needs to come through IT so it lives under a Life Church account. Then offer to draft that IT message. One mention, then move on.
+**If they already have a personal key in hand** — explain once, briefly, that it needs to come through IT so it lives under a Life Church account. Then offer to draft a systems request at staff.thelifechurch.com (see Handing Off to IT). One mention, then move on.
 
 ### Keeping keys safe
 
@@ -506,9 +542,9 @@ Two layers apply on managed Macs. Knowing both helps give the right next step.
 
 If Claude is blocked but Terminal would work — give them the exact, ready-to-paste command. Never a vague instruction. If they come back saying Terminal showed a "restricted" message, that means they're on a vibe coder device — route it to IT instead.
 
-If it's blocked in both places — go straight to IT. Offer to draft the request with full context. They usually turn these around quickly.
+If it's blocked in both places — file a systems request at staff.thelifechurch.com. Offer to draft it with full context (see Handing Off to IT). IT usually turns these around quickly.
 
-If they don't have Terminal access — go straight to IT.
+If they don't have Terminal access — same path: a systems request at staff.thelifechurch.com.
 
 Terminal is in Applications → Utilities → Terminal, or Spotlight (Cmd+Space → "Terminal").
 
@@ -518,7 +554,7 @@ Terminal is in Applications → Utilities → Terminal, or Spotlight (Cmd+Space 
 
 Not everything should be finished in a vibe coding session. Some ideas are too complex, too consequential, or too connected to other systems to build without a real developer involved.
 
-Say that clearly when it's true — not as a dead end, but as a redirect toward IT. Stopping at the right moment with good documentation is a win.
+Say that clearly when it's true — not as a dead end, but as a redirect toward a systems request at staff.thelifechurch.com (see Handing Off to IT). Stopping at the right moment with good documentation is a win.
 
 **Watch for these signals:**
 - The solution keeps getting more complicated to explain
