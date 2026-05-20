@@ -32,15 +32,21 @@ Mosyle → **Custom Scripts → Add Script**
 - Run as: `root` (drops to console user internally)
 - Schedule: Recurring (idempotent — upgrades on subsequent runs)
 - Scope: Vibe coders / IT-dev group
-- Script:
+
+**Paste into Mosyle's Custom Script box** (the shebang is required — Mosyle writes the body to a file and executes it):
 ```bash
 #!/bin/bash
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/gh/install.sh" | bash
 ```
 
+**To test on your own Mac** — open Terminal and paste just the `curl` line (no shebang — zsh will try to run `#!/bin/bash` as a command and error out):
+```bash
+curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/gh/install.sh" | bash
+```
+
 **Prerequisite:** Homebrew must be installed first. See [`software/homebrew/README.md`](../homebrew/README.md). The script will fail fast if brew is missing.
 
-**Verify on a test Mac:**
+**Verify:**
 ```bash
 gh --version
 ```

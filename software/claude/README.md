@@ -64,13 +64,19 @@ Mosyle → **Custom Scripts → Add Script**
 - Run as: `root`
 - Schedule: Daily
 - Scope: Default group
-- Script:
+
+**Paste into Mosyle's Custom Script box** (shebang required — Mosyle writes the body to a file and executes it):
 ```bash
 #!/bin/zsh
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/claude/CLAUDE.md" -o /etc/claude-code/CLAUDE.md
 ```
 
-**Verify on a test Mac:**
+**To test on your own Mac** — open Terminal and paste just the `curl` line (drop the shebang — zsh will treat `#!/bin/zsh` as a command and error out). Writing to `/etc/` requires sudo:
+```bash
+sudo curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/claude/CLAUDE.md" -o /etc/claude-code/CLAUDE.md
+```
+
+**Verify:**
 ```bash
 cat /etc/claude-code/CLAUDE.md
 ```
