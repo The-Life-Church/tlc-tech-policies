@@ -46,7 +46,8 @@ Mosyle → **Custom Scripts → Add Script** — one per group.
 - Run as: `root`
 - Schedule: Daily
 - Scope: Vibe Coders/Claude Users group
-- Script:
+
+**Paste into Mosyle's Custom Script box** (shebang required — Mosyle writes the body to a file and executes it):
 ```bash
 #!/bin/bash
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/shell/deploy-shell-policy-vibe-coders.sh" | bash
@@ -56,13 +57,19 @@ curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/
 - Run as: `root`
 - Schedule: Daily
 - Scope: Default group
-- Script:
+
+**Paste into Mosyle's Custom Script box** (shebang required — Mosyle writes the body to a file and executes it):
 ```bash
 #!/bin/bash
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/shell/deploy-shell-policy-default.sh" | bash
 ```
 
-**Verify on a test Mac:**
+**To test either on your own Mac** — open Terminal and paste just the `curl` line (drop the shebang — zsh will treat `#!/bin/bash` as a command and error out). Pipe to `sudo bash` since the script writes `/etc/tlc-shell-policy.zsh` and edits `/etc/zshrc`:
+```bash
+curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/shell/deploy-shell-policy-vibe-coders.sh" | sudo bash
+```
+
+**Verify:**
 ```bash
 cat /etc/tlc-shell-policy.zsh
 cat /etc/zshrc

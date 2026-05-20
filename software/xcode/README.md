@@ -32,13 +32,19 @@ Mosyle → **Custom Scripts → Add Script**
 - Run as: `root`
 - Schedule: One-time or recurring (idempotent either way)
 - Scope: Any group that needs developer tooling (vibe coders, IT/dev)
-- Script:
+
+**Paste into Mosyle's Custom Script box** (the shebang is required — Mosyle writes the body to a file and executes it):
 ```bash
 #!/bin/bash
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/xcode/install-clt.sh" | bash
 ```
 
-**Verify on a test Mac:**
+**To test on your own Mac** — open Terminal and paste just the `curl` line (no shebang — zsh will try to run `#!/bin/bash` as a command and error out):
+```bash
+curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/xcode/install-clt.sh" | bash
+```
+
+**Verify:**
 ```bash
 xcode-select -p
 # Should print: /Library/Developer/CommandLineTools
