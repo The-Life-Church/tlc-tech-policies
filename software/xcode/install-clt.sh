@@ -38,9 +38,11 @@ if [ -z "$PROD" ]; then
     exit 1
 fi
 
-log "Found package: ${PROD}. Installing..."
-if ! softwareupdate -i "$PROD" --verbose 2>&1 | tee -a "$LOG_FILE"; then
-    log "ERROR: softwareupdate exited with non-zero status."
+log "Found package: ${PROD}. Installing (30 min timeout)..."
+# Cap softwareupdate at 30 min — Apple's CDN occasionally hangs.
+# timeout exits 124 on timeout; pipefail surfaces that through the pipeline.
+if ! timeout 1800 softwareupdate -i "$PROD" --verbose 2>&1 | tee -a "$LOG_FILE"; then
+    log "ERROR: softwareupdate failed or timed out."
     rm -f /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
     exit 1
 fi
