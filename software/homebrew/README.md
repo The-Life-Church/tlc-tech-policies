@@ -45,17 +45,23 @@ Mosyle → **Custom Scripts → Add Script**
 - Run as: `root`
 - Schedule: One-time or recurring (idempotent)
 - Scope: Vibe coders / IT-dev group (anyone who needs brew)
-- Script:
+
+**Paste into Mosyle's Custom Script box** (the shebang is required — Mosyle writes the body to a file and executes it):
 ```bash
 #!/bin/bash
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/homebrew/install.sh" | bash
+```
+
+**To test on your own Mac** — open Terminal and paste just the `curl` line (no shebang — zsh will try to run `#!/bin/bash` as a command and error out). Pipe to `sudo bash` because the script needs root to write `/etc/sudoers.d/tlc-brew-install` (Mosyle runs as root automatically; in Terminal you have to opt in). Note: this actually installs brew under the console user, so only run it on a Mac you want brew installed on:
+```bash
+curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/homebrew/install.sh" | sudo bash
 ```
 
 **Prerequisite:** CLT must be installed first. See [`software/xcode/README.md`](../xcode/README.md). The script will fail fast if CLT is missing.
 
 **Follow-up:** for `gh`, see [`software/gh/README.md`](../gh/README.md) — separate Mosyle entry, depends on this one.
 
-**Verify on a test Mac:**
+**Verify:**
 ```bash
 /opt/homebrew/bin/brew --version    # or /usr/local/bin/brew on Intel
 ```
