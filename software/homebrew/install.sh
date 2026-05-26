@@ -90,12 +90,18 @@ if [ -x "$BREW" ]; then
     log "Homebrew already installed at ${BREW}."
 else
     log "Homebrew not found. Downloading installer..."
-    INSTALLER=$(mktemp)
+    # `mktemp` with no args uses $TMPDIR, which on macOS defaults to
+    # /var/folders/<user>/... — root's copy is mode 700, so williamturner
+    # (or any console user) can't traverse it. Pin the path under /tmp
+    # (world-readable on macOS) and chmod the file so the dropped user
+    # can read and execute it.
+    INSTALLER=$(mktemp /tmp/tlc-brew-installer.XXXXXX)
     if ! curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh -o "$INSTALLER"; then
         log "ERROR: Failed to download Homebrew installer."
         rm -f "$INSTALLER"
         exit 1
     fi
+    chmod 0644 "$INSTALLER"
 
     log "Running Homebrew installer as '${CONSOLE_USER}' (30 min timeout)..."
     # NONINTERACTIVE=1 suppresses the "press return to continue" prompt.
