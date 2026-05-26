@@ -17,6 +17,13 @@ log() {
     echo "$msg" | tee -a "$LOG_FILE"
 }
 
+# macOS doesn't ship with GNU `timeout` (it's part of coreutils). Provide a
+# shim using perl's alarm(), which is bundled with the OS. Same usage:
+# `timeout SECONDS command args...`. SIGALRM kills the process on expiry.
+timeout() {
+    perl -e 'alarm shift; exec @ARGV' "$@"
+}
+
 # --- Guard: already installed ---
 if xcode-select -p &>/dev/null; then
     log "CLT already installed at $(xcode-select -p). Nothing to do."

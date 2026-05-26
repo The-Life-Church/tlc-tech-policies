@@ -20,6 +20,13 @@ log() {
     echo "$msg" | tee -a "$LOG_FILE"
 }
 
+# macOS doesn't ship with GNU `timeout` (it's part of coreutils). Provide a
+# shim using perl's alarm(), which is bundled with the OS. Same usage:
+# `timeout SECONDS command args...`. SIGALRM kills the process on expiry.
+timeout() {
+    perl -e 'alarm shift; exec @ARGV' "$@"
+}
+
 # Homebrew prefix depends on architecture
 if [ "$(uname -m)" = "arm64" ]; then
     BREW="/opt/homebrew/bin/brew"
