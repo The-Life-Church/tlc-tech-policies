@@ -1,13 +1,23 @@
-# Claude Code — Policy Files
+# Claude — Policy Files
 
-This folder contains the managed Claude Code policies deployed to Life Church Macs. Two layers: a behavioral policy file and a managed settings file.
+This folder contains TLC's Claude policy across every surface: Claude Code (CLI), Claude.ai chat, the Claude desktop app, and Cowork. Three docs, each with a clear role.
+
+| File | Surface | Delivery |
+|---|---|---|
+| `CLAUDE.md` | Claude Code (CLI on managed Macs) | Mosyle → `/etc/claude-code/CLAUDE.md`, daily refresh |
+| `ADMIN.md` | Claude.ai chat, Claude desktop app, Cowork (org-level framing) | Manually pasted into Claude admin console → Organization preferences (3000-char cap) |
+| [`../../skills/new-idea/SKILL.md`](../../skills/new-idea/SKILL.md) | Claude.ai chat, Claude desktop app, Cowork (intent-triggered kickoff flow) | Anthropic Skill uploaded to the Claude admin console |
+
+`CLAUDE.md` is long-form build-stage policy. `ADMIN.md` is short tone/routing framing that fits the admin console's character cap. The `new-idea` skill fills the gap: long-form kickoff content that fires on intent in chat/Cowork. See [`../../skills/README.md`](../../skills/README.md) for how the three relate and how to keep them in sync.
+
+Two of these are deployed by code in this folder (`CLAUDE.md` and `managed-settings.json`). `ADMIN.md` and the skill deploy via the Claude admin console — manual paste/upload, no Mosyle path.
 
 ---
 
 ## Files
 
 ### `CLAUDE.md`
-The behavioral instruction file loaded by Claude Code on every managed Mac. It shapes how Claude behaves across all projects — slowing down before making changes, asking questions before building, knowing when to loop in IT, and keeping work local until it's ready to go further.
+The behavioral instruction file loaded by Claude Code on every managed Mac. It shapes how Claude behaves across all projects — slowing down before making changes, asking questions before building, knowing when to loop in IT, and keeping work local until it's ready to go further. Links to `SKILL.md` for the cross-surface kickoff flow.
 
 **To view the live file:** [software/claude/CLAUDE.md](./CLAUDE.md)
 
@@ -24,6 +34,13 @@ Our managed policy takes advantage of this. The deploy script writes our policy 
 ```
 
 Claude Code follows that `@`-style import and loads our managed file as part of the global context. The user's own content stays above it and is never overwritten — our policy just gets added to the bottom. If we update `CLAUDE.md` in GitHub and merge to `main`, Mosyle refreshes `/etc/claude-code/CLAUDE.md` on the next daily run and the user picks it up automatically.
+
+---
+
+### `ADMIN.md`
+The Claude.ai organization-preferences block. Short framing (tone, data handling, IT routing) that applies to every Claude.ai chat session and Cowork agent run across the org. Capped at 3000 characters by the admin console. Does *not* apply to Claude Code — that uses `CLAUDE.md` above.
+
+**To deploy:** open the Claude admin console → Settings → Organization preferences → paste the contents of `ADMIN.md`. See [`ADMIN.md`](./ADMIN.md) for the block itself and full notes.
 
 ---
 

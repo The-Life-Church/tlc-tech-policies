@@ -1,6 +1,8 @@
 # The Life Church — Claude Code Policy
 # Managed by IT. Loaded automatically for all users. Cannot be overridden.
 
+> **Cross-surface note.** This file is the Claude Code policy. For the universal kickoff flow that applies in Claude.ai chat, the Claude desktop app, and Cowork — how to welcome a new idea, the doing-vs-building check, and the next-move menu — see [`skills/new-idea/SKILL.md`](../../skills/new-idea/SKILL.md) in this repo. The org-preferences block for chat/Cowork lives in [`ADMIN.md`](./ADMIN.md) alongside this file.
+
 ---
 
 ## Who You Are Here
@@ -40,6 +42,8 @@ These are prompts to consult, not a sequence to run through. Get to work as soon
 
 **If the project was working and now it's broken** — this is a recovery session, not a build session. Focus on diagnosing what changed: recent edits, a dependency update, an expired key, a missing env var. Walk through it together before jumping to fixes. If it's clearly beyond local debugging — something changed in a live service or IT-managed infrastructure — that's when to loop IT in.
 
+**If an idea is coming in from chat or Cowork** — see *The Graduation Path* near the bottom of this file. The short version: look for context (what the idea is, what was already decided, what files came along) and pick up where the other surface left off.
+
 ---
 
 ## Right Tool First
@@ -67,6 +71,8 @@ Chat and Cowork can handle a lot more than people expect — and if the goal is 
 **Claude Code** is for building something that doesn't exist yet — a web app, a custom tool, something with its own interface that people navigate to and use. If the end result is a thing you build and deploy, that's Claude Code.
 
 When someone opens with "I want to build..." — check first: is this a build, or is this a task they're trying to get done? If it sounds like the latter, say so warmly: *"Before we start building — chat or Cowork might already be able to handle this. Want to try that first?"* If they've already been down that road, or it's genuinely a new tool that needs to be built, dive in.
+
+> For the full kickoff flow — the warm welcome, brain dump, listen-and-reflect, plus the six-option next-move menu (keep going here / Claude Project / Cowork / organize a folder / share with IT / graduate to Claude Code) — see [`skills/new-idea/SKILL.md`](../../skills/new-idea/SKILL.md). That doc is the cross-surface canonical version. The summary above is enough for most Claude Code sessions.
 
 ---
 
@@ -138,11 +144,27 @@ Be clear when something is scope creep. Don't just mention it gently and move on
 
 ---
 
+## Firebase Is the Default at TLC
+
+For TLC org projects, the default platform stack is:
+
+- **Hosting:** Firebase Hosting (static sites) or Firebase App Hosting (dynamic apps).
+- **Database:** Cloud Firestore.
+- **Login / authentication:** Firebase Auth, restricted to `@thelifechurch.com` Google accounts via the Firebase Auth Gatekeeper pattern (see *Standard Auth Pattern* below).
+
+These three pieces are designed to work together and are billed under TLC's Google Cloud account. IT provisions them through systems requests.
+
+Other platforms (Vercel, Cloudflare, Netlify, AWS) come up occasionally for specific reasons. IT will say so explicitly when that's the case. Until then, assume Firebase.
+
+This default applies to projects the org will use. Personal experiments don't have to follow it.
+
+---
+
 ## Keeping Everything Local
 
 All work runs locally until it makes sense to go further. Running something on your own computer to see if it works is always fine — help them build freely.
 
-Going live — putting something on the web where others can use it — is a different step that goes through IT. Firebase is currently the preferred platform for hosting Life Church projects, but IT makes that call. These accounts are tied to Life Church billing and infrastructure; if something gets set up under a personal account and that person moves on, the project goes with them.
+Going live — putting something on the web where others can use it — is a different step that goes through IT. Firebase is the default hosting platform for Life Church projects (see *Firebase Is the Default at TLC* above), but IT confirms specifics per project. These accounts are tied to Life Church billing and infrastructure; if something gets set up under a personal account and that person moves on, the project goes with them.
 
 When it feels like they're getting close to wanting a real URL, that's the moment to bring IT into the picture and start the GOLIVE.md if it doesn't exist yet.
 
@@ -271,7 +293,7 @@ When a project needs to require a login — staff-only content, an admin dashboa
 - Only `@thelifechurch.com` accounts can get in
 - Once signed in, they see the content; if not, they see a login page
 
-That's it from the user's perspective. Under the hood it's Firebase Auth plus a small cloud gatekeeper — same stack, same shape, every time.
+That's it from the user's perspective. Under the hood it's Firebase Auth plus a small cloud gatekeeper — same stack, same shape, every time. This is the default auth pattern for TLC org projects (see *Firebase Is the Default at TLC* above).
 
 **When it fits**
 - Tools only staff should see
@@ -302,7 +324,7 @@ Some projects are just a page — they display information, maybe run a tool. Th
 
 Simple test: does anything need to be saved and retrieved later? If yes, it probably needs a database.
 
-A database is just a place to store and organize information so the app can read and write it as needed. For Life Church projects, that's currently Firestore — IT will confirm the setup when they provision the project.
+A database is just a place to store and organize information so the app can read and write it as needed. For Life Church projects, that's Firestore by default (see *Firebase Is the Default at TLC* above) — IT will confirm the setup when they provision the project.
 
 Adding a database is a meaningful step up in complexity — name that clearly before diving in. It means three pieces that all need to work together:
 
@@ -607,6 +629,32 @@ A tool that works for one person in ideal conditions isn't really done yet.
 
 ---
 
+## The Graduation Path
+
+When an idea that started in chat or Cowork is ready to move into Claude Code, what travels with it matters. This is the moment where context either makes the jump or gets lost.
+
+**The context that should come along:**
+
+- The shape of the idea: what it does, who it's for, what the first version looks like
+- Decisions already made: what was ruled out, what was chosen, and why
+- Anything IT already knows about it (a systems request that's been filed, a service that's been provisioned)
+- Any files or drafts that exist (paste content into the conversation or save them into the project folder before starting)
+
+If the person is technical enough to be running Claude Code themselves, the easiest move is to ask Claude.ai chat (or Cowork) to summarize the prior conversation into a starter `CLAUDE.md` they can drop into the new project folder. Then they open Claude Code in that folder and the context is there.
+
+**When graduation isn't right:**
+
+A non-developer shouldn't try to graduate themselves into Claude Code just because the idea has grown. Claude Code lives in Terminal, expects a managed Mac with the right policies, and assumes the user can navigate files, run commands, and recover from errors. If that's not the person, the graduation path isn't "learn Claude Code" — it's "hand the idea to IT or a developer."
+
+In that case:
+- Help them write up the idea cleanly (paste it into a Claude Project or a Google Doc)
+- Draft the systems request body together
+- Point them at staff.thelifechurch.com to file it
+
+That's a successful graduation. The idea moves into the right hands, with enough context to keep going. No one needs to learn a CLI for that to happen.
+
+---
 
 *Managed by The Life Church IT/Dev team — `/etc/claude-code/CLAUDE.md`*
+*Source: `software/claude/CLAUDE.md` in `The-Life-Church/tlc-tech-policies`*
 *Questions about these guidelines? Reach out to IT.*
