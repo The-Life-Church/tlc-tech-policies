@@ -48,61 +48,27 @@ These are prompts to consult, not a sequence to run through. Get to work as soon
 
 ## Right Tool First
 
-Before starting a build, pause and ask: **are we doing something, or building something?**
+Before starting a build, ask: **are we doing something, or building something?**
 
-Chat and Cowork can handle a lot more than people expect — and if the goal is to get a task done, there's a good chance one of those tools can do it right now without writing a single line of code. Claude Code is specifically for when someone needs to build something new: a web app, a custom internal tool, something that needs a real interface or doesn't exist yet.
+A lot of "I want to build..." requests are actually tasks chat or Cowork can already handle — drafting, summarizing, automating workflows across Gmail/Calendar/Drive/ClickUp. Claude Code is for things that genuinely need a new interface, a real database, or custom code.
 
-**Claude chat** is good for anything where the output is the work itself — writing, editing, summarizing, analyzing, researching. It can process documents and data exports you upload, generate reports, clean up and reformat files, answer questions about your content, and think through problems with you. If the task is self-contained and the result comes back in the conversation, chat is probably the right place. For example:
-- Drafting a newsletter, announcement, promo copy, or email
-- Writing a sermon series outline, small group guide, or event script
-- Summarizing a document, report, or meeting recording (just upload it)
-- Generating social media captions or graphic copy
-- Proofreading or rewriting existing content
-- Answering questions about a document or pulling out specific info
-- Cleaning up a roster, CSV, or data export (one-time)
+If a request sounds like a task rather than a build, say so warmly: *"Before we start building — chat or Cowork might already handle this. Want to try that first?"* If they've been down that road or it's genuinely a build, dive in.
 
-**Cowork** is good for tasks that involve taking action inside your tools. It connects to Gmail, Google Calendar, Google Drive, and ClickUp by default — additional connections available through IT. That means it can manage email, schedule and organize calendar events, work with files in Drive, update tasks in ClickUp, run recurring routines, pull regular exports, and handle multi-step workflows across those tools. If the task involves doing something inside the systems they already use day to day, Cowork can probably handle it. For example:
-- Triaging or cleaning up an email inbox
-- Drafting and sending emails
-- Scheduling, updating, or finding calendar events
-- Finding, organizing, or summarizing files in Drive
-- Creating or updating tasks and projects in ClickUp
-
-**Claude Code** is for building something that doesn't exist yet — a web app, a custom tool, something with its own interface that people navigate to and use. If the end result is a thing you build and deploy, that's Claude Code.
-
-When someone opens with "I want to build..." — check first: is this a build, or is this a task they're trying to get done? If it sounds like the latter, say so warmly: *"Before we start building — chat or Cowork might already be able to handle this. Want to try that first?"* If they've already been down that road, or it's genuinely a new tool that needs to be built, dive in.
-
-> For the full kickoff flow — the warm welcome, brain dump, listen-and-reflect, plus the six-option next-move menu (keep going here / Claude Project / Cowork / organize a folder / share with IT / graduate to Claude Code) — see the `idea` skill in the `innovation` plugin in the private [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) repo. That skill is the cross-surface canonical version. The summary above is enough for most Claude Code sessions; install the plugin if you want explicit invocation via `/innovation:idea`.
+> For the full kickoff flow — warm welcome, brain dump, doing-vs-building check, six-option next-move menu — invoke the `innovation:idea` skill (auto-loads on intent, or `/innovation:idea` to trigger directly). It's the canonical cross-surface version.
 
 ---
 
 ## Starting a New Project
 
-When someone says anything like "I want to build..." or "I have an idea for..." treat it as a project kickoff. Don't jump straight to building — help them think it through first.
+For the full kickoff thinking — what does it do, who's it for, what does done look like, does it touch storage/login/outside services, personal vs org — run the `innovation:idea` skill. It carries the canonical question set and the six-option next-move menu.
 
-### Step 1 — Flesh it out
-Three questions before touching any files:
-- What does it do and who is it for?
-- What does done look like for the first version?
-- Does it need to save anything, let people log in, or connect to an outside service — like YouTube, OpenAI, Planning Center, ProPresenter, Google Drive, or devices on the network?
+Once kickoff is done and you're committing to building in Claude Code, set up the project files:
 
-That last one is good to know early — if any of those are in play, IT can often get things set up quickly so there's no waiting later. (See When a Project Needs a Database and API Keys.)
+- **`CLAUDE.md`** — create immediately if missing. Fill it with what you know from kickoff.
+- **`WORKLOG.md`** — offer it, don't require it. If they decline, note that in `CLAUDE.md` so you don't ask again.
+- **`GOLIVE.md`** — don't create at project start. Create it the first time hosting, a database, or an API key comes up. Template in *Keeping Everything Local* below.
 
-### Step 2 — Scope check
-Is this a new standalone project or does it fit inside something they're already working on? If genuinely unclear, build it out a bit more before making a call.
-
-### Step 3 — Personal or org?
-If it's something the team will use, mention it naturally — when it's ready, it should probably live in The Life Church GitHub org so it's easy to share and maintain. If it's personal, no org repo needed.
-
-### Step 4 — Set up the project
-
-**`CLAUDE.md`** — create it immediately if missing. Fill it with what you already know from the kickoff conversation.
-
-**`WORKLOG.md`** — offer it, don't require it. If they say no, note that in `CLAUDE.md` so you don't ask again.
-
-**`GOLIVE.md`** — don't create at project start. Create it the first time hosting, a database, or an API key comes up. See Keeping Everything Local for the template.
-
-If all files already exist — skip setup and pick up from the WORKLOG.
+If all three already exist, skip setup and pick up from the WORKLOG.
 
 ---
 
@@ -631,27 +597,9 @@ A tool that works for one person in ideal conditions isn't really done yet.
 
 ## The Graduation Path
 
-When an idea that started in chat or Cowork is ready to move into Claude Code, what travels with it matters. This is the moment where context either makes the jump or gets lost.
+When an idea arrives from chat or Cowork, look for the context that should travel with it: what it does and who it's for, decisions already made and why, anything IT already knows, and any files or drafts that exist. If a starter `CLAUDE.md` came with the project folder, that's usually where the context lives — start there.
 
-**The context that should come along:**
-
-- The shape of the idea: what it does, who it's for, what the first version looks like
-- Decisions already made: what was ruled out, what was chosen, and why
-- Anything IT already knows about it (a systems request that's been filed, a service that's been provisioned)
-- Any files or drafts that exist (paste content into the conversation or save them into the project folder before starting)
-
-If the person is technical enough to be running Claude Code themselves, the easiest move is to ask Claude.ai chat (or Cowork) to summarize the prior conversation into a starter `CLAUDE.md` they can drop into the new project folder. Then they open Claude Code in that folder and the context is there.
-
-**When graduation isn't right:**
-
-A non-developer shouldn't try to graduate themselves into Claude Code just because the idea has grown. Claude Code lives in Terminal, expects a managed Mac with the right policies, and assumes the user can navigate files, run commands, and recover from errors. If that's not the person, the graduation path isn't "learn Claude Code" — it's "hand the idea to IT or a developer."
-
-In that case:
-- Help them write up the idea cleanly (paste it into a Claude Project or a Google Doc)
-- Draft the systems request body together
-- Point them at staff.thelifechurch.com to file it
-
-That's a successful graduation. The idea moves into the right hands, with enough context to keep going. No one needs to learn a CLI for that to happen.
+If a non-developer ends up in Claude Code without that context (or without the skill set to navigate Terminal), the right move isn't to teach them the CLI — it's to help them write the idea up cleanly and draft a systems request to IT at staff.thelifechurch.com. That's a successful graduation too. The idea moves into the right hands.
 
 ---
 
