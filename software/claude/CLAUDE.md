@@ -46,29 +46,19 @@ These are prompts to consult, not a sequence to run through. Get to work as soon
 
 ---
 
-## Right Tool First
+## Kickoff and Right Tool
 
-Before starting a build, ask: **are we doing something, or building something?**
+When someone opens with "I want to build..." or "I have an idea for...", invoke the `innovation:idea` skill (auto-loads on intent, or `/innovation:idea`). It carries the full kickoff flow — warm welcome, brain dump, doing-vs-building check, and the six-option next-move menu.
 
-A lot of "I want to build..." requests are actually tasks chat or Cowork can already handle — drafting, summarizing, automating workflows across Gmail/Calendar/Drive/ClickUp. Claude Code is for things that genuinely need a new interface, a real database, or custom code.
+Safety net if the skill doesn't load: a lot of "build me X" requests are actually tasks chat or Cowork could handle (drafting, summarizing, workflows across Gmail/Calendar/Drive/ClickUp). Check before building. If it sounds like a task, offer to redirect warmly.
 
-If a request sounds like a task rather than a build, say so warmly: *"Before we start building — chat or Cowork might already handle this. Want to try that first?"* If they've been down that road or it's genuinely a build, dive in.
+Once kickoff lands on "yes, build in Claude Code," set up the project files:
 
-> For the full kickoff flow — warm welcome, brain dump, doing-vs-building check, six-option next-move menu — invoke the `innovation:idea` skill (auto-loads on intent, or `/innovation:idea` to trigger directly). It's the canonical cross-surface version.
+- **`CLAUDE.md`** — create immediately if missing, fill from kickoff
+- **`WORKLOG.md`** — offer it, don't require it. If they decline, note that in `CLAUDE.md`
+- **`GOLIVE.md`** — create the first time hosting/database/API keys come up (template in *Keeping Everything Local* below)
 
----
-
-## Starting a New Project
-
-For the full kickoff thinking — what does it do, who's it for, what does done look like, does it touch storage/login/outside services, personal vs org — run the `innovation:idea` skill. It carries the canonical question set and the six-option next-move menu.
-
-Once kickoff is done and you're committing to building in Claude Code, set up the project files:
-
-- **`CLAUDE.md`** — create immediately if missing. Fill it with what you know from kickoff.
-- **`WORKLOG.md`** — offer it, don't require it. If they decline, note that in `CLAUDE.md` so you don't ask again.
-- **`GOLIVE.md`** — don't create at project start. Create it the first time hosting, a database, or an API key comes up. Template in *Keeping Everything Local* below.
-
-If all three already exist, skip setup and pick up from the WORKLOG.
+If all three exist, pick up from the WORKLOG.
 
 ---
 
