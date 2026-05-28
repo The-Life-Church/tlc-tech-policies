@@ -1,15 +1,22 @@
 # Repository Structure
 
-A map of this repo. Useful for humans navigating it and for skills that need to point at canonical URLs by stable path.
+A map of this repo and how it relates to the companion private repo. Useful for humans navigating it and for tooling that needs to point at canonical URLs by stable path.
+
+## Two repos, one policy
+
+| Repo | Visibility | Contains |
+|---|---|---|
+| `tlc-tech-policies` (this repo) | Public | Claude Code policy (`CLAUDE.md`), org-preferences block (`ADMIN.md`), Mosyle deploy scripts, shell restrictions, silent installers, hardware policy |
+| [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) | Private | Claude Code plugin marketplace + skills (e.g. `idea`). Syncs into Claude.ai admin console for chat + Cowork. |
+
+Skills moved to the private repo because the Claude.ai admin console only accepts private GitHub sources for skill sync. Everything else stays public so Mosyle's unauthenticated `raw.githubusercontent.com` pulls keep working.
+
+## Layout
 
 ```
 tlc-tech-policies/
 ├── README.md                                 ← Repo overview, entry point
 ├── STRUCTURE.md                              ← This file
-├── .claude-plugin/                           ← Marketplace + plugin manifests (Claude Code)
-│   ├── marketplace.json                      ← Declares this repo as the tlc-tech-policies marketplace
-│   ├── plugin.json                           ← Manifest for the tlc-skills plugin (source: "./")
-│   └── README.md                             ← How marketplace + plugin co-locate at repo root
 ├── software/                                 ← Policies organized by software area
 │   ├── claude/                               ← Claude policy: Code, chat/Cowork org prefs
 │   │   ├── CLAUDE.md                         ← Managed Claude Code policy (→ /etc/claude-code/CLAUDE.md)
@@ -33,38 +40,31 @@ tlc-tech-policies/
 │   └── gh/                                   ← Silent GitHub CLI installer (requires Homebrew)
 │       ├── install.sh
 │       └── README.md
-├── skills/                                   ← Anthropic Skills authored by TLC
-│   ├── README.md                             ← How skills deploy + relate to CLAUDE.md/ADMIN.md
-│   └── new-idea/
-│       └── SKILL.md                          ← Canonical cross-surface kickoff flow
 └── hardware/                                 ← Mac hardware policies (coming soon)
 ```
 
-## Canonical raw URLs
+The private companion repo has its own structure — see its README for details.
 
-For tools and skills that need to fetch the latest version of a file:
+## Canonical raw URLs (this repo)
+
+For tools and Mosyle scripts that need to fetch the latest version of a file:
 
 | File | Raw URL |
 |---|---|
 | Claude Code policy | `https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/claude/CLAUDE.md` |
-| New-idea skill | `https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/skills/new-idea/SKILL.md` |
 | Managed settings | `https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/claude/managed-settings.json` |
-| Marketplace manifest | `https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/.claude-plugin/marketplace.json` |
-| Plugin manifest | `https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/.claude-plugin/plugin.json` |
 
-The marketplace itself is referenced as `The-Life-Church/tlc-tech-policies` in Claude Code's `/plugin marketplace add` command — no raw URL needed.
+The `tlc-claude-plugins` marketplace is referenced as `The-Life-Church/tlc-claude-plugins` in Claude Code's `/plugin marketplace add` command (requires `gh auth` for private-repo access).
 
 ## How the surfaces relate
 
 | Surface | Policy file(s) loaded | Delivery |
 |---|---|---|
-| Claude Code (CLI on managed Mac) | `software/claude/CLAUDE.md` + `managed-settings.json` + `tlc-skills` plugin (every skill under `skills/`) | Mosyle pulls policy from `main` daily; plugin installs via marketplace (manual or via managed `enabledPlugins`) |
-| Claude.ai chat + Claude desktop app | `software/claude/ADMIN.md` (org prefs) + `skills/new-idea/SKILL.md` (on intent) | Admin console (manual paste) + Skills (admin upload) |
+| Claude Code (CLI on managed Mac) | `software/claude/CLAUDE.md` + `managed-settings.json` (this repo) + `tlc-skills` plugin (private repo) | Mosyle pulls policy from `main` daily; plugin installs via marketplace from `tlc-claude-plugins` |
+| Claude.ai chat + Claude desktop app | `software/claude/ADMIN.md` (this repo, org prefs) + `idea` skill (private repo, on intent) | Admin console: paste `ADMIN.md` into Organization preferences; sync skills from `tlc-claude-plugins` |
 | Cowork | Same as Claude.ai chat | Same as Claude.ai chat |
 
-`CLAUDE.md` links to `SKILL.md` for the cross-surface kickoff flow so Claude Code sessions can read the full version when relevant. The skill doesn't load `CLAUDE.md` — Claude Code mechanics aren't useful in chat/Cowork.
-
-The `tlc-skills` plugin uses the marketplace + plugin manifests in `.claude-plugin/` to deliver skills natively to Claude Code via Anthropic's plugin system — no Mosyle script needed for skills.
+`CLAUDE.md` (this repo) mentions the `idea` skill by name so Claude Code sessions know it exists, but doesn't link to it directly since cross-repo deep-links don't resolve cleanly.
 
 ---
 

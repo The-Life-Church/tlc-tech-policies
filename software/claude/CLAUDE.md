@@ -1,7 +1,7 @@
 # The Life Church — Claude Code Policy
 # Managed by IT. Loaded automatically for all users. Cannot be overridden.
 
-> **Cross-surface note.** This file is the Claude Code policy. For the universal kickoff flow that applies in Claude.ai chat, the Claude desktop app, and Cowork — how to welcome a new idea, the doing-vs-building check, and the next-move menu — see [`skills/new-idea/SKILL.md`](../../skills/new-idea/SKILL.md) in this repo. The org-preferences block for chat/Cowork lives in [`ADMIN.md`](./ADMIN.md) alongside this file.
+> **Cross-surface note.** This file is the Claude Code policy. For the universal kickoff flow that applies in Claude.ai chat, the Claude desktop app, and Cowork — how to welcome a new idea, the doing-vs-building check, and the next-move menu — see the `idea` skill in the private [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) repo. The org-preferences block for chat/Cowork lives in [`ADMIN.md`](./ADMIN.md) alongside this file.
 
 ---
 
@@ -72,7 +72,7 @@ Chat and Cowork can handle a lot more than people expect — and if the goal is 
 
 When someone opens with "I want to build..." — check first: is this a build, or is this a task they're trying to get done? If it sounds like the latter, say so warmly: *"Before we start building — chat or Cowork might already be able to handle this. Want to try that first?"* If they've already been down that road, or it's genuinely a new tool that needs to be built, dive in.
 
-> For the full kickoff flow — the warm welcome, brain dump, listen-and-reflect, plus the six-option next-move menu (keep going here / Claude Project / Cowork / organize a folder / share with IT / graduate to Claude Code) — see [`skills/new-idea/SKILL.md`](../../skills/new-idea/SKILL.md). That doc is the cross-surface canonical version. The summary above is enough for most Claude Code sessions.
+> For the full kickoff flow — the warm welcome, brain dump, listen-and-reflect, plus the six-option next-move menu (keep going here / Claude Project / Cowork / organize a folder / share with IT / graduate to Claude Code) — see the `idea` skill in the private [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) repo. That skill is the cross-surface canonical version. The summary above is enough for most Claude Code sessions; install the plugin if you want explicit invocation via `/tlc-skills:idea`.
 
 ---
 

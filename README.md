@@ -2,7 +2,9 @@
 
 **The Life Church — Managed IT Policies for Staff Devices**
 
-Policies, configuration files, deployment scripts, and Anthropic Skills that IT manages across Life Church Macs and Claude surfaces. Delivered via Mosyle (managed Macs) and the Claude admin console (Claude.ai chat, Cowork, Skills). Organized by area so each piece can be found, reviewed, and updated independently.
+Policies, configuration files, and deployment scripts that IT manages across Life Church Macs and Claude surfaces. Delivered via Mosyle (managed Macs) and the Claude admin console (Claude.ai chat, Cowork). Organized by area so each piece can be found, reviewed, and updated independently.
+
+Skills and the Claude Code plugin marketplace live in the companion private repo [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) — see *How TLC's Claude policy spans every surface* below for how the two repos fit together.
 
 See [`STRUCTURE.md`](./STRUCTURE.md) for the full repo map and canonical raw URLs.
 
@@ -18,7 +20,6 @@ tlc-tech-policies/
 │   ├── xcode/        ← Xcode Command Line Tools silent installer
 │   ├── homebrew/     ← Homebrew silent installer
 │   └── gh/           ← GitHub CLI silent installer (requires homebrew)
-├── skills/           ← Anthropic Skills authored by TLC (Claude.ai chat + Cowork)
 └── hardware/         ← Mac hardware and device configuration (coming soon)
 ```
 
@@ -28,17 +29,17 @@ Each folder has its own `README.md` covering what's inside and how it deploys. S
 
 ## How TLC's Claude policy spans every surface
 
-TLC staff use Claude across three surfaces. Each has its own policy file in this repo:
+TLC staff use Claude across three surfaces. The policy is split across two repos:
 
-| Surface | Policy | Delivery |
-|---|---|---|
-| **Claude Code** (CLI on managed Mac) | [`software/claude/CLAUDE.md`](./software/claude/CLAUDE.md) | Mosyle → `/etc/claude-code/CLAUDE.md`, daily refresh |
-| **Claude.ai chat + Claude desktop app + Cowork** (org-level framing) | [`software/claude/ADMIN.md`](./software/claude/ADMIN.md) | Pasted into Claude admin console → Organization preferences (3000-char limit) |
-| **Claude.ai chat + Claude desktop app + Cowork** (intent-triggered kickoff flow) | [`skills/new-idea/SKILL.md`](./skills/new-idea/SKILL.md) | Anthropic Skill uploaded to the Claude admin console |
+| Surface | Policy | Repo | Delivery |
+|---|---|---|---|
+| **Claude Code** (CLI on managed Mac) | `software/claude/CLAUDE.md` | `tlc-tech-policies` (this repo, public) | Mosyle → `/etc/claude-code/CLAUDE.md`, daily refresh |
+| **Claude.ai chat + Claude desktop app + Cowork** (org-level framing) | `software/claude/ADMIN.md` | `tlc-tech-policies` (this repo, public) | Pasted into Claude admin console → Organization preferences (3000-char limit) |
+| **All surfaces** (intent-triggered kickoff flow + plugin marketplace) | `skills/idea/SKILL.md` and `.claude-plugin/` | [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) (private) | Claude Code: plugin marketplace install. Chat + Cowork: admin-console GitHub sync (requires private repo). |
 
-The three docs each have a clear role. `CLAUDE.md` is long and covers full build-stage Claude Code behavior. `ADMIN.md` is short and covers tone and routing at the org level. The `new-idea` skill is the canonical cross-surface kickoff flow that fires when someone brings a new idea to Claude — covers the warm welcome, brain-dump prompt, doing-vs-building check, and six-option next-move menu (keep going here, set up a Claude Project, use Cowork, organize a folder, share with IT, graduate to Claude Code).
+The `idea` skill is the canonical cross-surface kickoff flow that fires when someone brings a new idea to Claude — covers the warm welcome, brain-dump prompt, doing-vs-building check, and six-option next-move menu (keep going here, set up a Claude Project, use Cowork, organize a folder, share with IT, graduate to Claude Code).
 
-See [`skills/README.md`](./skills/README.md) for more on how the three pieces relate and how to keep them in sync.
+Skills live in the private companion repo because the Claude.ai admin console only accepts private GitHub repos as skill sync sources. Everything else stays public so Mosyle's unauthenticated `raw.githubusercontent.com` pulls keep working.
 
 ---
 
@@ -112,21 +113,7 @@ Scope to vibe coders / IT-dev group. Deploy after the Homebrew installer. See [`
 
 ## skills + plugin marketplace
 
-This repo is a [Claude Code plugin marketplace](https://code.claude.com/docs/en/plugin-marketplaces) (see [`.claude-plugin/marketplace.json`](./.claude-plugin/marketplace.json)) that ships one plugin, `tlc-skills`, containing every skill under [`skills/`](./skills/).
-
-| Skill | What it does |
-|---|---|
-| [`new-idea`](./skills/new-idea/SKILL.md) | Cross-surface kickoff flow for new ideas at TLC — warm welcome, brain-dump prompt, doing-vs-building check, six-option next-move menu. |
-
-**Install per user** (works today):
-```
-/plugin marketplace add The-Life-Church/tlc-tech-policies
-/plugin install tlc-skills@tlc-tech-policies
-```
-
-For Claude.ai chat + Cowork, skills deploy through the Claude admin console (manual upload) — the plugin path is Claude Code-only.
-
-See [`skills/README.md`](./skills/README.md) for deployment details (per-user, org-wide via managed settings, admin console for chat/Cowork) and authoring conventions.
+Skills live in the private [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) repo, not here. That repo ships the `tlc-skills` plugin via a Claude Code marketplace and syncs into the Claude.ai admin console for chat + Cowork. See its README for the install commands and how it relates to this repo.
 
 ---
 
