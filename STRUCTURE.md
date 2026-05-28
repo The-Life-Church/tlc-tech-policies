@@ -60,7 +60,7 @@ The `tlc-claude-plugins` marketplace is referenced as `The-Life-Church/tlc-claud
 
 | Surface | Policy file(s) loaded | Delivery |
 |---|---|---|
-| Claude Code (CLI on managed Mac) | `software/claude/CLAUDE.md` + `managed-settings.json` (this repo) + `tlc-skills` plugin (private repo) | Mosyle pulls policy from `main` daily; plugin installs via marketplace from `tlc-claude-plugins` |
+| Claude Code (CLI on managed Mac) | `software/claude/CLAUDE.md` + `managed-settings.json` (this repo) + `innovation` plugin (private repo) | Mosyle pulls policy from `main` daily; plugin installs via marketplace from `tlc-claude-plugins` |
 | Claude.ai chat + Claude desktop app | `software/claude/ADMIN.md` (this repo, org prefs) + `idea` skill (private repo, on intent) | Admin console: paste `ADMIN.md` into Organization preferences; sync skills from `tlc-claude-plugins` |
 | Cowork | Same as Claude.ai chat | Same as Claude.ai chat |
 

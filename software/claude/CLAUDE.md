@@ -72,7 +72,7 @@ Chat and Cowork can handle a lot more than people expect — and if the goal is 
 
 When someone opens with "I want to build..." — check first: is this a build, or is this a task they're trying to get done? If it sounds like the latter, say so warmly: *"Before we start building — chat or Cowork might already be able to handle this. Want to try that first?"* If they've already been down that road, or it's genuinely a new tool that needs to be built, dive in.
 
-> For the full kickoff flow — the warm welcome, brain dump, listen-and-reflect, plus the six-option next-move menu (keep going here / Claude Project / Cowork / organize a folder / share with IT / graduate to Claude Code) — see the `idea` skill in the private [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) repo. That skill is the cross-surface canonical version. The summary above is enough for most Claude Code sessions; install the plugin if you want explicit invocation via `/tlc-skills:idea`.
+> For the full kickoff flow — the warm welcome, brain dump, listen-and-reflect, plus the six-option next-move menu (keep going here / Claude Project / Cowork / organize a folder / share with IT / graduate to Claude Code) — see the `idea` skill in the `innovation` plugin in the private [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) repo. That skill is the cross-surface canonical version. The summary above is enough for most Claude Code sessions; install the plugin if you want explicit invocation via `/innovation:idea`.
 
 ---
 

@@ -6,11 +6,11 @@ This folder contains TLC's Claude policy across every surface: Claude Code (CLI)
 |---|---|---|
 | `CLAUDE.md` | Claude Code (CLI on managed Macs) | Mosyle → `/etc/claude-code/CLAUDE.md`, daily refresh |
 | `ADMIN.md` | Claude.ai chat, Claude desktop app, Cowork (org-level framing) | Manually pasted into Claude admin console → Organization preferences (3000-char cap) |
-| `idea` skill in [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) (private repo) | Claude.ai chat, Claude desktop app, Cowork, Claude Code (intent-triggered kickoff flow) | Claude Code: plugin marketplace install. Chat + Cowork: admin-console GitHub sync from the private repo. |
+| `idea` skill in the `innovation` plugin at [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) (private repo) | Claude.ai chat, Claude desktop app, Cowork, Claude Code (intent-triggered kickoff flow) | Claude Code: plugin marketplace install. Chat + Cowork: admin-console GitHub sync from the private repo. |
 
-`CLAUDE.md` is long-form build-stage policy. `ADMIN.md` is short tone/routing framing that fits the admin console's character cap. The `idea` skill fills the gap: long-form kickoff content that fires on intent in chat/Cowork/Claude Code, complementing the short admin-console block. It lives in a private repo because the Claude.ai admin console only syncs skills from private GitHub sources.
+`CLAUDE.md` is long-form build-stage policy. `ADMIN.md` is short tone/routing framing that fits the admin console's character cap. The `innovation` plugin's `idea` skill fills the gap: long-form kickoff content that fires on intent in chat/Cowork/Claude Code, complementing the short admin-console block. It lives in a private repo because the Claude.ai admin console only syncs skills from private GitHub sources.
 
-`CLAUDE.md` and `managed-settings.json` deploy via Mosyle scripts in this folder. `ADMIN.md` deploys via manual paste into the admin console. The skill deploys via the plugin marketplace in `tlc-claude-plugins` (Claude Code) and admin-console GitHub sync (chat + Cowork).
+`CLAUDE.md` and `managed-settings.json` deploy via Mosyle scripts in this folder. `ADMIN.md` deploys via manual paste into the admin console. The plugin deploys via the marketplace in `tlc-claude-plugins` (Claude Code) and admin-console GitHub sync (chat + Cowork).
 
 ---
 

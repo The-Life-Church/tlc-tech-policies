@@ -35,7 +35,7 @@ TLC staff use Claude across three surfaces. The policy is split across two repos
 |---|---|---|---|
 | **Claude Code** (CLI on managed Mac) | `software/claude/CLAUDE.md` | `tlc-tech-policies` (this repo, public) | Mosyle → `/etc/claude-code/CLAUDE.md`, daily refresh |
 | **Claude.ai chat + Claude desktop app + Cowork** (org-level framing) | `software/claude/ADMIN.md` | `tlc-tech-policies` (this repo, public) | Pasted into Claude admin console → Organization preferences (3000-char limit) |
-| **All surfaces** (intent-triggered kickoff flow + plugin marketplace) | `skills/idea/SKILL.md` and `.claude-plugin/` | [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) (private) | Claude Code: plugin marketplace install. Chat + Cowork: admin-console GitHub sync (requires private repo). |
+| **All surfaces** (intent-triggered kickoff flow + plugin marketplace) | `innovation/skills/idea/SKILL.md` + `.claude-plugin/marketplace.json` | [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) (private) | Claude Code: plugin marketplace install. Chat + Cowork: admin-console GitHub sync (requires private repo). |
 
 The `idea` skill is the canonical cross-surface kickoff flow that fires when someone brings a new idea to Claude — covers the warm welcome, brain-dump prompt, doing-vs-building check, and six-option next-move menu (keep going here, set up a Claude Project, use Cowork, organize a folder, share with IT, graduate to Claude Code).
 
@@ -113,7 +113,7 @@ Scope to vibe coders / IT-dev group. Deploy after the Homebrew installer. See [`
 
 ## skills + plugin marketplace
 
-Skills live in the private [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) repo, not here. That repo ships the `tlc-skills` plugin via a Claude Code marketplace and syncs into the Claude.ai admin console for chat + Cowork. See its README for the install commands and how it relates to this repo.
+Skills live in the private [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) repo, not here. That repo ships the `innovation` plugin (containing the `idea` skill) via a Claude Code marketplace and syncs into the Claude.ai admin console for chat + Cowork. See its README for the install commands and how it relates to this repo.
 
 ---
 
