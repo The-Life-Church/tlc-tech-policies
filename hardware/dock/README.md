@@ -66,7 +66,16 @@ installs `/usr/local/bin/dockutil`) — not vendored here. The version is pinned
 
 ## Deploy
 
-**Mosyle → Custom Scripts → paste, scope to provisioning group, run ONE-TIME:**
+> ⚠️ **Scope to new-enrollment Macs ONLY.** The first run wipes the Dock
+> (`dockutil --remove all`) before seeding. A Mac that has never run this has no
+> reset marker, so its first run **will erase the user's customized Dock** —
+> including someone who's had their Mac for a year. **Never scope this to existing
+> in-use Macs.** They still get the apps via the Chrome force-list (Admin console /
+> Mosyle); their Dock is intentionally left untouched. The marker only prevents a
+> *second* wipe on a Mac that's already been seeded — it does not protect a
+> first-time run on an existing Mac.
+
+**Mosyle → Custom Scripts → paste, scope to the provisioning (new-enrollment) group, run ONE-TIME:**
 
 ```bash
 # TLC Staff Dock — bootstrap (run as root, one-time)
@@ -74,7 +83,8 @@ curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/
 ```
 
 Run it **one-time**, not recurring — the LaunchDaemon owns the retry loop. Re-running the
-bootstrap is safe (it tops up missing apps) but will not re-wipe a customized Dock.
+bootstrap on an **already-seeded** Mac is safe (it tops up missing apps, won't re-wipe) —
+but that safety comes from the marker, which a brand-new target won't have (see warning above).
 
 ## Adding Gemini selectively
 
