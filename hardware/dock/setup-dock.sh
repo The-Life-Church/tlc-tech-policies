@@ -63,7 +63,10 @@ fi
 # created them for that user, so their candidate paths are home-relative.
 
 typeset -a managed_order
-managed_order=(chrome gemini gmail gchat gcal gmeet drivepwa gdocs gsheets gslides clickup settings selfservice)
+# Docs/Sheets/Slides are force-installed via Chrome but intentionally NOT docked
+# (too much dock clutter). To dock them, add `gdocs gsheets gslides` back to the
+# order below and uncomment their app_label / app_bid / app_paths entries.
+managed_order=(chrome gemini gmail gchat gcal gmeet drivepwa clickup settings selfservice)
 
 typeset -A app_label app_bid app_paths
 
@@ -73,9 +76,9 @@ app_label[gcal]="Google Calendar"
 app_label[gmeet]="Google Meet"
 app_label[gchat]="Google Chat"
 app_label[drivepwa]="Google Drive (web)"
-app_label[gdocs]="Google Docs"
-app_label[gsheets]="Google Sheets"
-app_label[gslides]="Google Slides"
+# app_label[gdocs]="Google Docs"      # force-installed via Chrome, not docked
+# app_label[gsheets]="Google Sheets"  # force-installed via Chrome, not docked
+# app_label[gslides]="Google Slides"  # force-installed via Chrome, not docked
 app_label[gemini]="Gemini"
 app_label[clickup]="ClickUp"
 app_label[settings]="System Settings"
@@ -88,9 +91,9 @@ app_bid[gcal]="com.google.Chrome.app.kjbdgfilnfhdoflbpgamdcdgpehopbep"
 app_bid[gmeet]="com.google.Chrome.app.kjgfgldnnfoeklkmfkjfagphfepbbdan"
 app_bid[gchat]="com.google.Chrome.app.pommaclcbfghclhalboakcipcmmndhcj"
 app_bid[drivepwa]="com.google.Chrome.app.aghbiahbpaijignceidepookljebhfak"
-app_bid[gdocs]="com.google.Chrome.app.mpnpojknpmmopombnjdcgaaiekajbnjb"
-app_bid[gsheets]="com.google.Chrome.app.fhihpiojkbmbpdjeoajapmgkhlnakfjf"
-app_bid[gslides]="com.google.Chrome.app.kefjledonklijopmnomlcbpllchaibag"
+# app_bid[gdocs]="com.google.Chrome.app.mpnpojknpmmopombnjdcgaaiekajbnjb"     # not docked
+# app_bid[gsheets]="com.google.Chrome.app.fhihpiojkbmbpdjeoajapmgkhlnakfjf"   # not docked
+# app_bid[gslides]="com.google.Chrome.app.kefjledonklijopmnomlcbpllchaibag"   # not docked
 app_bid[gemini]="com.google.GeminiMacOS"
 # clickup / settings / selfservice: derived from the app bundle at runtime.
 
@@ -105,12 +108,12 @@ app_paths[gchat]="$user_home/Applications/Chrome Apps.localized/Google Chat.app
 $user_home/Applications/Google Chat.app"
 app_paths[drivepwa]="$user_home/Applications/Chrome Apps.localized/Google Drive.app
 $user_home/Applications/Google Drive.app"
-app_paths[gdocs]="$user_home/Applications/Chrome Apps.localized/Docs.app
-$user_home/Applications/Docs.app"
-app_paths[gsheets]="$user_home/Applications/Chrome Apps.localized/Sheets.app
-$user_home/Applications/Sheets.app"
-app_paths[gslides]="$user_home/Applications/Chrome Apps.localized/Slides.app
-$user_home/Applications/Slides.app"
+# app_paths[gdocs]="$user_home/Applications/Chrome Apps.localized/Docs.app
+# $user_home/Applications/Docs.app"
+# app_paths[gsheets]="$user_home/Applications/Chrome Apps.localized/Sheets.app
+# $user_home/Applications/Sheets.app"
+# app_paths[gslides]="$user_home/Applications/Chrome Apps.localized/Slides.app
+# $user_home/Applications/Slides.app"
 app_paths[gemini]="/Applications/Gemini.app"
 app_paths[clickup]="/Applications/ClickUp.app"
 app_paths[settings]="/System/Applications/System Settings.app"
