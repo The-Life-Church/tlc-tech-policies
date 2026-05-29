@@ -34,18 +34,20 @@ Finder is pinned first by macOS; Trash is always last.
 | 5 | Google Calendar | Chrome PWA |
 | 6 | Google Meet | Chrome PWA |
 | 7 | Google Drive (web) | Chrome PWA |
-| 8 | Google Docs | Chrome PWA |
-| 9 | Google Sheets | Chrome PWA |
-| 10 | Google Slides | Chrome PWA |
-| 11 | ClickUp | native |
-| 12 | System Settings | native |
-| 13 | Self Service | native |
+| 8 | ClickUp | native |
+| 9 | System Settings | native |
+| 10 | Self Service | native |
 
 Gemini **is** in this set — new enrollments get it docked at slot 2. The standalone
 `add-gemini-to-dock.sh` (see *Adding Gemini to an existing Mac* below) is just a separate way
 to add Gemini to a Mac that didn't go through the enrollment seed.
 
-**PWAs are best-effort.** Gmail, Calendar, Meet, Chat, Drive (web), Docs, Sheets, and Slides
+**Docs, Sheets, and Slides are force-installed via Chrome but intentionally not docked**
+(dock clutter) — they still install and are available in Launchpad / Chrome apps. To dock
+them, add `gdocs gsheets gslides` back to `managed_order` and uncomment their entries in
+`setup-dock.sh` (the entries are kept, commented, for exactly this).
+
+**PWAs are best-effort.** The docked PWAs — Gmail, Chat, Calendar, Meet, Drive (web) —
 live in the user's home (`~/Applications/Chrome Apps.localized/`) and only exist once
 Chrome has installed them for that user. If they're absent through all retries, they're
 skipped — the native apps still seed. Reliable PWA seeding depends on those PWAs being
