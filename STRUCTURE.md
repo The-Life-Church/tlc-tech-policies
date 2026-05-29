@@ -37,10 +37,20 @@ tlc-tech-policies/
 │   ├── homebrew/                             ← Silent Homebrew installer
 │   │   ├── install.sh
 │   │   └── README.md
-│   └── gh/                                   ← Silent GitHub CLI installer (requires Homebrew)
-│       ├── install.sh
+│   ├── gh/                                   ← Silent GitHub CLI installer (requires Homebrew)
+│   │   ├── install.sh
+│   │   └── README.md
+│   └── chrome/                               ← Chrome managed prefs (force-install Google PWAs)
+│       ├── managed-preferences.plist        ← Mosyle Chrome Per-App Config (PLIST)
 │       └── README.md
-└── hardware/                                 ← Mac hardware policies (coming soon)
+└── hardware/                                 ← Mac hardware + device-level policy
+    └── dock/                                 ← Dock seeding (curl|bash bootstrap; replaces tlc-dock-seed .pkg)
+        ├── install-staff-dock.sh            ← Mosyle bootstrap: install dockutil + scripts, load daemon
+        ├── setup-dock.sh                    ← Runtime: first-run clean slate + add managed apps, retry
+        ├── report-status.sh                 ← Status reporter (exit 0/1/2/3)
+        ├── com.tlc.dock.seed.plist          ← Seeding LaunchDaemon (RunAtLoad + 10-min retry)
+        ├── add-gemini-to-dock.sh            ← Standalone: add Gemini to a user's Dock (selective, not everybody)
+        └── README.md                        ← Managed app list, deploy, status, rollback
 ```
 
 The private companion repo has its own structure — see its README for details.

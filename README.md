@@ -111,15 +111,44 @@ Scope to vibe coders / IT-dev group. Deploy after the Homebrew installer. See [`
 
 ---
 
+## software/chrome
+
+Force-installs the standard Google web apps (Gmail, Calendar, Meet, Drive, Docs, Sheets,
+Slides) as PWAs on managed Macs via Chrome's `WebAppInstallForceList`. Delivered through
+**Mosyle's Chrome Per-App Configuration** (paste the PLIST) — not a script. Pairs with
+`hardware/dock`: once Chrome installs the PWAs, the dock seeder docks them.
+
+See [`software/chrome/README.md`](./software/chrome/README.md) for deploy steps and the
+required bundle-id verification.
+
+---
+
 ## skills + plugin marketplace
 
 Skills live in the private [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) repo, not here. That repo ships the `innovation` plugin (containing the `idea` skill) via a Claude Code marketplace and syncs into the Claude.ai admin console for chat + Cowork. See its README for the install commands and how it relates to this repo.
 
 ---
 
+## hardware/dock
+
+Seeds a clean, standard Dock on managed Macs at setup. Wipes the Dock to a clean slate on
+first run, then adds the managed Google + ClickUp + Self Service app set in order via
+`dockutil` (pulled from its signed upstream release — not vendored here). A short-lived
+LaunchDaemon retries to catch apps, including Chrome PWAs, that finish installing after first
+boot, then removes itself. Replaces the former standalone `tlc-dock-seed` `.pkg`.
+
+**Mosyle → Custom Scripts → paste, scope to provisioning group, run ONE-TIME:**
+```bash
+# TLC Staff Dock — bootstrap (run as root, one-time)
+curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/hardware/dock/install-staff-dock.sh" | bash
+```
+
+See [`hardware/dock/README.md`](./hardware/dock/README.md) for the managed app list, status
+checks, retry/re-wipe, and rollback.
+
 ## hardware
 
-Coming soon — Mac provisioning, dock configuration, and device-level policy.
+More device-level policy (Mac provisioning, additional hardware config) — coming as needed.
 
 ---
 
