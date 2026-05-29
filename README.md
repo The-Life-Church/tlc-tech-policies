@@ -19,8 +19,10 @@ tlc-tech-policies/
 │   ├── shell/        ← Terminal shell restrictions deployed via Mosyle
 │   ├── xcode/        ← Xcode Command Line Tools silent installer
 │   ├── homebrew/     ← Homebrew silent installer
-│   └── gh/           ← GitHub CLI silent installer (requires homebrew)
-└── hardware/         ← Mac hardware and device configuration (coming soon)
+│   ├── gh/           ← GitHub CLI silent installer (requires homebrew)
+│   └── chrome/       ← Chrome managed prefs: force-install Google PWAs (Mosyle Per-App Config)
+└── hardware/
+    └── dock/         ← Staff Dock seeding (curl|bash bootstrap; + selective Gemini add)
 ```
 
 Each folder has its own `README.md` covering what's inside and how it deploys. Start there for details.
@@ -113,8 +115,8 @@ Scope to vibe coders / IT-dev group. Deploy after the Homebrew installer. See [`
 
 ## software/chrome
 
-Force-installs the standard Google web apps (Gmail, Calendar, Meet, Drive, Docs, Sheets,
-Slides) as PWAs on managed Macs via Chrome's `WebAppInstallForceList`. Delivered through
+Force-installs the standard Google web apps (Gmail, Calendar, Meet, Chat, Drive, Docs,
+Sheets, Slides) as PWAs on managed Macs via Chrome's `WebAppInstallForceList`. Delivered through
 **Mosyle's Chrome Per-App Configuration** (paste the PLIST) — not a script. Pairs with
 `hardware/dock`: once Chrome installs the PWAs, the dock seeder docks them.
 
@@ -135,7 +137,9 @@ Seeds a clean, standard Dock on managed Macs at setup. Wipes the Dock to a clean
 first run, then adds the managed Google + ClickUp + Self Service app set in order via
 `dockutil` (pulled from its signed upstream release — not vendored here). A short-lived
 LaunchDaemon retries to catch apps, including Chrome PWAs, that finish installing after first
-boot, then removes itself. Replaces the former standalone `tlc-dock-seed` `.pkg`.
+boot, then removes itself. Replaces the former standalone `tlc-dock-seed` `.pkg`. Gemini is
+rolled out selectively — added per-user by a separate one-time script
+(`add-gemini-to-dock.sh`) scoped to just the Gemini group, not part of the everybody set.
 
 **Mosyle → Custom Scripts → paste, scope to provisioning group, run ONE-TIME:**
 ```bash

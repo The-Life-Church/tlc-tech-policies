@@ -1,13 +1,22 @@
 #!/bin/bash
 
 # The Life Church — Staff Dock Bootstrap
-# Deploy via Mosyle as a ONE-TIME script (run as root).
-# curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/hardware/dock/install-staff-dock.sh | bash
 #
-# Replaces the old .pkg installer. Pulls the runtime scripts + LaunchDaemon
-# from this repo and the dockutil binary from its signed upstream release,
-# then bootstraps the seeding daemon. No binary is vendored in this repo and
-# nothing is version-pinned by filename — the daemon always runs latest main.
+# ===== What to put in Mosyle =================================================
+#   Mosyle -> Scripts (Custom Command) -> new shell script
+#     Name:   TLC Staff Dock — seed
+#     Run:    Once     As: root     Scope: provisioning group (all staff Macs)
+#     Script:
+#       #!/bin/bash
+#       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/hardware/dock/install-staff-dock.sh | bash
+# =============================================================================
+#
+# Replaces the old .pkg installer. Pulls the runtime scripts + LaunchDaemon from
+# this repo and the dockutil binary from its signed upstream release, then
+# bootstraps the seeding daemon. No binary is vendored and nothing is
+# version-pinned by filename: each bootstrap run pulls the latest main, and the
+# daemon then runs that fetched copy. (Re-run the bootstrap to update an
+# already-provisioned Mac; new Macs always get latest main.)
 
 set -euo pipefail
 
