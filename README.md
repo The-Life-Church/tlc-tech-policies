@@ -116,9 +116,10 @@ Scope to vibe coders / IT-dev group. Deploy after the Homebrew installer. See [`
 ## software/chrome
 
 Force-installs the standard Google web apps (Gmail, Calendar, Meet, Chat, Drive, Docs,
-Sheets, Slides) as PWAs on managed Macs via Chrome's `WebAppInstallForceList`. Delivered through
-**Mosyle's Chrome Per-App Configuration** (paste the PLIST) — not a script. Pairs with
-`hardware/dock`: once Chrome installs the PWAs, the dock seeder docks them.
+Sheets, Slides) as PWAs on managed Macs via Chrome's `WebAppInstallForceList`. Delivered from
+the **Google Workspace Admin console** (Chrome Enterprise Core), force-installed at the
+**top-level org** — not a script (the Mosyle Per-App Config PLIST is a fallback route). Pairs
+with `hardware/dock`: once Chrome installs the PWAs, the dock seeder docks them.
 
 See [`software/chrome/README.md`](./software/chrome/README.md) for deploy steps and the
 required bundle-id verification.

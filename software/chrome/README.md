@@ -1,33 +1,53 @@
 # software/chrome — Google Chrome managed preferences
 
-Force-installs the standard Google web apps (PWAs) on managed Macs so users never have
-to install them by hand. Pairs with `hardware/dock` — once Chrome installs these PWAs,
-the dock seeder finds them in `~/Applications/Chrome Apps.localized/` and docks them.
+Force-installs the standard Google web apps (PWAs) on managed Macs so users never have to
+install them by hand — **force-installed at the top-level org in Google Workspace** (Admin
+console → Chrome Enterprise Core), so every enrolled Chrome browser gets them fleet-wide.
+Pairs with `hardware/dock` — once Chrome installs these PWAs, the dock seeder finds them in
+`~/Applications/Chrome Apps.localized/` and docks them.
 
 ## What's here
 
-- `managed-preferences.plist` — the Chrome managed-prefs dict (key: `WebAppInstallForceList`)
-  to paste into Mosyle's Chrome **Per-App Configuration**.
+- `managed-preferences.plist` — the `WebAppInstallForceList` dict; the source of record for
+  the 8 app URLs. Primary delivery is the Admin console (top-level org); this file is the
+  paste body for the **Mosyle Per-App Configuration** fallback route.
 
 ## Deploy
 
-This rides with the Chrome app you already push — no separate profile.
+**Primary (in use): Google Workspace Admin console — Chrome Enterprise Core.** Force-installed
+at the **top-level org**, so every enrolled Chrome browser gets them fleet-wide.
 
-**Mosyle → Apps → Google Chrome → Per-App Configuration → "Configure App PLIST or
-MobileConfig" → Activate this configuration → type: PLIST →** open
-`managed-preferences.plist`, select all, paste. Confirm. Scope to the same devices that get
-Chrome.
+**admin.google.com → Devices → Chrome → Apps & extensions → Users & browsers →** select the
+**top-level org → "+" → Add by URL.** Add each URL below, set **Installation policy: Force
+install** and **Open in a separate window**:
 
-> **Paste format (Mosyle gotcha):** Mosyle's PLIST field wants the `<dict>…</dict>` block
-> **only** — it rejects a full plist document (`<?xml … ?>` / `<!DOCTYPE …>` / `<plist>`
+    https://mail.google.com/
+    https://calendar.google.com/
+    https://meet.google.com/
+    https://chat.google.com/
+    https://drive.google.com/
+    https://docs.google.com/document/
+    https://docs.google.com/spreadsheets/
+    https://docs.google.com/presentation/
+
+Use `https://chat.google.com/` for Chat — `mail.google.com/chat/` force-installs as a
+URL-named placeholder. Don't pick "Force install **+ pin**": pin targets the ChromeOS shelf,
+not the macOS Dock (docking is the `hardware/dock` seeder's job).
+
+**Alternative: Mosyle Chrome Per-App Configuration (PLIST).** Same effect via Mosyle instead —
+paste `managed-preferences.plist` into the Chrome app's Per-App Config (Configure App PLIST →
+Activate → type PLIST → select all, paste). **Pick one source, not both** — running it in the
+Admin console *and* Mosyle makes the cloud and platform policy layers fight over precedence.
+
+> **Mosyle paste gotcha (PLIST route only):** Mosyle's PLIST field wants the `<dict>…</dict>`
+> block **only** — it rejects a full plist document (`<?xml … ?>` / `<!DOCTYPE …>` / `<plist>`
 > wrapper) as "The XML inserted is not valid." So `managed-preferences.plist` is stored as
-> exactly that bare `<dict>` fragment, comment-free — **open it, select all, paste, done.**
-> It is intentionally **not** a standalone plist (so `plutil -lint` won't pass it — that's
-> expected); its only job is to be the literal Mosyle paste body.
+> exactly that bare `<dict>` fragment, comment-free — open it, select all, paste. It is
+> intentionally **not** a standalone plist (`plutil -lint` won't pass it — expected).
 
-`WebAppInstallForceList` installs the apps silently; users can't remove them. They open in
-standalone windows (`default_launch_container = window`). Users must restart Chrome once for
-the policy to take effect.
+`WebAppInstallForceList` installs the apps silently; users can't remove them, and they open in
+standalone windows. Admin-console pushes apply on the next policy refresh; the Mosyle PLIST
+route needs one Chrome restart to take effect.
 
 ## Sequencing with the dock seed
 
