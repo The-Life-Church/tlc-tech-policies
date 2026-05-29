@@ -63,7 +63,7 @@ fi
 # created them for that user, so their candidate paths are home-relative.
 
 typeset -a managed_order
-managed_order=(chrome gmail gchat gcal gmeet drivepwa gdocs gsheets gslides clickup settings selfservice)
+managed_order=(chrome gemini gmail gchat gcal gmeet drivepwa gdocs gsheets gslides clickup settings selfservice)
 
 typeset -A app_label app_bid app_paths
 
@@ -76,6 +76,7 @@ app_label[drivepwa]="Google Drive (web)"
 app_label[gdocs]="Google Docs"
 app_label[gsheets]="Google Sheets"
 app_label[gslides]="Google Slides"
+app_label[gemini]="Gemini"
 app_label[clickup]="ClickUp"
 app_label[settings]="System Settings"
 app_label[selfservice]="Self Service"
@@ -90,6 +91,7 @@ app_bid[drivepwa]="com.google.Chrome.app.aghbiahbpaijignceidepookljebhfak"
 app_bid[gdocs]="com.google.Chrome.app.mpnpojknpmmopombnjdcgaaiekajbnjb"
 app_bid[gsheets]="com.google.Chrome.app.fhihpiojkbmbpdjeoajapmgkhlnakfjf"
 app_bid[gslides]="com.google.Chrome.app.kefjledonklijopmnomlcbpllchaibag"
+app_bid[gemini]="com.google.GeminiMacOS"
 # clickup / settings / selfservice: derived from the app bundle at runtime.
 
 app_paths[chrome]="/Applications/Google Chrome.app"
@@ -109,6 +111,7 @@ app_paths[gsheets]="$user_home/Applications/Chrome Apps.localized/Sheets.app
 $user_home/Applications/Sheets.app"
 app_paths[gslides]="$user_home/Applications/Chrome Apps.localized/Slides.app
 $user_home/Applications/Slides.app"
+app_paths[gemini]="/Applications/Gemini.app"
 app_paths[clickup]="/Applications/ClickUp.app"
 app_paths[settings]="/System/Applications/System Settings.app"
 app_paths[selfservice]="/Applications/Self-Service.app"

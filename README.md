@@ -138,9 +138,9 @@ Seeds a clean, standard Dock on managed Macs at setup. Wipes the Dock to a clean
 first run, then adds the managed Google + ClickUp + Self Service app set in order via
 `dockutil` (pulled from its signed upstream release — not vendored here). A short-lived
 LaunchDaemon retries to catch apps, including Chrome PWAs, that finish installing after first
-boot, then removes itself. Replaces the former standalone `tlc-dock-seed` `.pkg`. Gemini is
-rolled out selectively — added per-user by a separate one-time script
-(`add-gemini-to-dock.sh`) scoped to just the Gemini group, not part of the everybody set.
+boot, then removes itself. Replaces the former standalone `tlc-dock-seed` `.pkg`. A separate
+one-time script (`add-gemini-to-dock.sh`) adds Gemini to an **existing** Mac's Dock
+(append-only, no wipe) — for Macs that didn't go through the enrollment seed.
 
 **Mosyle → Custom Scripts → paste, scope to provisioning group, run ONE-TIME:**
 ```bash
