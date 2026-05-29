@@ -1,12 +1,19 @@
 #!/bin/bash
 
 # The Life Church — GitHub CLI (gh) Silent Install
-# Deploy via Mosyle as a one-time or recurring script (run as root).
+#
+# ===== What to put in Mosyle =================================================
+#   Mosyle -> Scripts (Custom Command) -> new shell script
+#     Name:   TLC GitHub CLI (gh) — Silent Install
+#     Run:    Once or recurring     As: root (script drops to console user)     Scope: vibe coders / IT-dev (after Homebrew)
+#     Script:
+#       #!/bin/bash
+#       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/gh/install.sh | bash
+# =============================================================================
+#
 # Requires Homebrew (see software/homebrew/install.sh). Runs `brew install gh`
-# as the active console user. No sudo dance needed — brew already owns its
-# prefix after install, so package installs don't escalate.
-# Failures are captured in the log file and reflected in the exit code.
-# curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/gh/install.sh | bash
+# as the active console user. No sudo dance needed — brew already owns its prefix
+# after install. Failures are captured in the log file and reflected in the exit code.
 
 set -euo pipefail
 

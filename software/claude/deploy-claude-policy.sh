@@ -1,8 +1,18 @@
 #!/bin/bash
 
 # The Life Church — Claude Code Policy Deployment
-# Deploy via Mosyle as a recurring daily script (run as root)
-# Source: https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/claude/CLAUDE.md
+#
+# ===== What to put in Mosyle =================================================
+#   Mosyle -> Scripts (Custom Command) -> new shell script
+#     Name:   TLC Claude Code Policy
+#     Run:    Recurring daily     As: root     Scope: all Claude Code Macs
+#     Script:
+#       #!/bin/bash
+#       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/claude/deploy-claude-policy.sh | bash
+# =============================================================================
+#
+# Pulls the managed policy from main into /etc/claude-code/CLAUDE.md on each run:
+#   https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/claude/CLAUDE.md
 
 POLICY_DIR="/etc/claude-code"
 POLICY_FILE="$POLICY_DIR/CLAUDE.md"
