@@ -1,9 +1,15 @@
 #!/bin/bash
 
 # The Life Church — Shell Policy Deployment (Default)
-# Deploy via Mosyle as a recurring script (run as root)
-# Scope to default (Claude Code users) device group in Mosyle.
-# curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/shell/deploy-shell-policy-default.sh | bash
+#
+# ===== What to put in Mosyle =================================================
+#   Mosyle -> Scripts (Custom Command) -> new shell script
+#     Name:   TLC Shell Policy — Default
+#     Run:    Recurring     As: root     Scope: default (Claude Code users) device group
+#     Script:
+#       #!/bin/bash
+#       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/shell/deploy-shell-policy-default.sh | bash
+# =============================================================================
 
 POLICY_FILE="/etc/tlc-shell-policy.zsh"
 ZSHRC="/etc/zshrc"

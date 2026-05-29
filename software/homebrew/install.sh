@@ -1,14 +1,21 @@
 #!/bin/bash
 
 # The Life Church — Homebrew Silent Install
-# Deploy via Mosyle as a one-time or recurring script (run as root).
-# Homebrew refuses to install as root, so this script detects the
-# active console user and runs the brew install as them.
-# The brew installer needs sudo internally; we grant the console user
-# temporary NOPASSWD sudo for the duration of the install via a
-# /etc/sudoers.d drop-in that is removed by trap on every exit path.
-# Failures are captured in the log file and reflected in the exit code.
-# curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/homebrew/install.sh | bash
+#
+# ===== What to put in Mosyle =================================================
+#   Mosyle -> Scripts (Custom Command) -> new shell script
+#     Name:   TLC Homebrew — Silent Install
+#     Run:    Once or recurring     As: root (script drops to console user)     Scope: vibe coders / IT-dev (after CLT)
+#     Script:
+#       #!/bin/bash
+#       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/homebrew/install.sh | bash
+# =============================================================================
+#
+# Homebrew refuses to install as root, so this script detects the active console
+# user and runs the brew install as them. The brew installer needs sudo
+# internally; we grant the console user temporary NOPASSWD sudo for the duration
+# via a /etc/sudoers.d drop-in removed by trap on every exit path. Failures are
+# captured in the log file and reflected in the exit code.
 
 set -euo pipefail
 

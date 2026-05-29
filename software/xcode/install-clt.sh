@@ -1,9 +1,17 @@
 #!/bin/bash
 
 # The Life Church — Xcode Command Line Tools Silent Install
-# Deploy via Mosyle as a one-time or recurring script (run as root)
+#
+# ===== What to put in Mosyle =================================================
+#   Mosyle -> Scripts (Custom Command) -> new shell script
+#     Name:   TLC Xcode Command Line Tools — Silent Install
+#     Run:    Once or recurring     As: root     Scope: any group needing CLT (vibe coders, devs)
+#     Script:
+#       #!/bin/bash
+#       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/xcode/install-clt.sh | bash
+# =============================================================================
+#
 # Failures are captured in the log file and reflected in the exit code.
-# curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/xcode/install-clt.sh | bash
 
 set -euo pipefail
 
