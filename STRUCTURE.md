@@ -49,7 +49,7 @@ tlc-tech-policies/
         ├── setup-dock.sh                    ← Runtime: first-run clean slate + add managed apps, retry
         ├── report-status.sh                 ← Status reporter (exit 0/1/2/3)
         ├── com.tlc.dock.seed.plist          ← Seeding LaunchDaemon (RunAtLoad + 10-min retry)
-        ├── add-gemini-to-dock.sh            ← Standalone: add Gemini to a user's Dock (selective, not everybody)
+        ├── add-gemini-to-dock.sh            ← Standalone: add Gemini to an existing Mac's Dock (append-only; seeder already docks it on new Macs)
         └── README.md                        ← Managed app list, deploy, status, rollback
 ```
 

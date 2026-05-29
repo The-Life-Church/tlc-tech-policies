@@ -28,21 +28,22 @@ Finder is pinned first by macOS; Trash is always last.
 | # | App | Type |
 |---|---|---|
 | 1 | Google Chrome | native (`/Applications`) |
-| 2 | Gmail | Chrome PWA |
-| 3 | Google Chat | Chrome PWA |
-| 4 | Google Calendar | Chrome PWA |
-| 5 | Google Meet | Chrome PWA |
-| 6 | Google Drive (web) | Chrome PWA |
-| 7 | Google Docs | Chrome PWA |
-| 8 | Google Sheets | Chrome PWA |
-| 9 | Google Slides | Chrome PWA |
-| 10 | ClickUp | native |
-| 11 | System Settings | native |
-| 12 | Self Service | native |
+| 2 | Gemini | native |
+| 3 | Gmail | Chrome PWA |
+| 4 | Google Chat | Chrome PWA |
+| 5 | Google Calendar | Chrome PWA |
+| 6 | Google Meet | Chrome PWA |
+| 7 | Google Drive (web) | Chrome PWA |
+| 8 | Google Docs | Chrome PWA |
+| 9 | Google Sheets | Chrome PWA |
+| 10 | Google Slides | Chrome PWA |
+| 11 | ClickUp | native |
+| 12 | System Settings | native |
+| 13 | Self Service | native |
 
-**Gemini is intentionally not in this set** — it's rolled out selectively, so it's added
-per-user by the standalone `add-gemini-to-dock.sh` (see *Adding Gemini selectively* below),
-not by this everybody seed.
+Gemini **is** in this set — new enrollments get it docked at slot 2. The standalone
+`add-gemini-to-dock.sh` (see *Adding Gemini to an existing Mac* below) is just a separate way
+to add Gemini to a Mac that didn't go through the enrollment seed.
 
 **PWAs are best-effort.** Gmail, Calendar, Meet, Chat, Drive (web), Docs, Sheets, and Slides
 live in the user's home (`~/Applications/Chrome Apps.localized/`) and only exist once
@@ -86,22 +87,24 @@ Run it **one-time**, not recurring — the LaunchDaemon owns the retry loop. Re-
 bootstrap on an **already-seeded** Mac is safe (it tops up missing apps, won't re-wipe) —
 but that safety comes from the marker, which a brand-new target won't have (see warning above).
 
-## Adding Gemini selectively
+## Adding Gemini to an existing Mac
 
-Gemini isn't in the everybody set. To add it to a specific user's Dock, deploy
-`add-gemini-to-dock.sh` as its own Mosyle Custom Script scoped to just the Gemini group:
+New enrollments already get Gemini via the seeder (slot 2). This standalone script is for
+adding Gemini to a Mac that **didn't** go through enrollment — e.g. an existing user — without
+the destructive wipe. Deploy it as its own Mosyle Custom Script scoped to those Macs:
 
 ```bash
 # TLC — add Gemini to this user's Dock (run as root, one-time, scoped group)
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/hardware/dock/add-gemini-to-dock.sh" | bash
 ```
 
-It's a one-shot, not a daemon: idempotent (does nothing if Gemini's already docked),
-appends Gemini to the end of the current Dock without wiping or reordering, and assumes
-dockutil is already present (the staff-dock bootstrap installs it) and the Gemini app has
-been pushed from Mosyle. There's no managed-preferences profile for the Gemini Mac app —
-its enterprise controls live in the Workspace Admin console GenAI settings, not a local
-plist.
+It's a one-shot, not a daemon: idempotent (does nothing if Gemini's already docked), and
+**append-only** — it adds Gemini to the end of the current Dock without wiping or reordering
+(safe on a customized Dock). Fully standalone: it installs dockutil from the signed upstream
+release if missing, so it doesn't depend on the staff-dock bootstrap having run. The Gemini
+app must already be pushed from Mosyle. (There's no managed-preferences profile for the Gemini
+Mac app — its enterprise controls live in the Workspace Admin console GenAI settings, not a
+local plist.)
 
 ## Checking status on a device
 

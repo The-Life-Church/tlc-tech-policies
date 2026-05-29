@@ -1,22 +1,22 @@
 #!/bin/zsh
 
-# The Life Church — add Google Gemini to a user's Dock (standalone, selective)
+# The Life Church — add Google Gemini to a user's Dock (standalone)
 #
 # ===== What to put in Mosyle =================================================
 #   Mosyle -> Scripts (Custom Command) -> new shell script
-#     Name:   TLC Dock — add Gemini (selective)
-#     Run:    Once     As: root     Scope: the Gemini group ONLY
+#     Name:   TLC Dock — add Gemini (existing Macs)
+#     Run:    Once     As: root     Scope: existing Macs that didn't run enrollment
 #     Script:
 #       #!/bin/bash
 #       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/hardware/dock/add-gemini-to-dock.sh | bash
 # =============================================================================
 #
-# NOT part of the everybody staff-dock seed (install-staff-dock.sh) — Gemini is
-# rolled out selectively. Idempotent (no-op if Gemini's already docked) and
-# append-only (doesn't wipe or reorder — this isn't the seeder). Fully standalone:
-# installs dockutil from its signed upstream release if it isn't already present,
-# so it does not depend on the staff-dock bootstrap having run. The Gemini app
-# itself must already be pushed from Mosyle.
+# New enrollments already get Gemini via the staff-dock seeder (slot 2). This is for
+# adding Gemini to an EXISTING Mac that didn't go through enrollment — append-only,
+# no wipe. Idempotent (no-op if Gemini's already docked) and doesn't reorder. Fully
+# standalone: installs dockutil from its signed upstream release if it isn't already
+# present, so it does not depend on the staff-dock bootstrap having run. The Gemini
+# app itself must already be pushed from Mosyle.
 
 set -u
 
