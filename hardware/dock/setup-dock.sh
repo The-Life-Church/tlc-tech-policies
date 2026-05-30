@@ -252,10 +252,13 @@ write_status() {
 
 cleanup_retry_artifacts() {
   /bin/rm -f "$ATTEMPT_FILE" "$DEFER_FILE"
-  if [[ -f "$LAUNCHDAEMON_PLIST" ]]; then
-    /bin/rm -f "$LAUNCHDAEMON_PLIST"
-    /bin/launchctl bootout system "com.tlc.dock.seed" >/dev/null 2>&1 || true
-  fi
+  # Remove the plist if it's still on disk...
+  [[ -f "$LAUNCHDAEMON_PLIST" ]] && /bin/rm -f "$LAUNCHDAEMON_PLIST"
+  # ...but ALWAYS bootout the loaded job by label, even if the plist was already
+  # deleted out-of-band. Gating the bootout on the plist's presence (the old bug)
+  # meant a deleted-plist-but-still-loaded daemon never self-removed — it kept
+  # firing every StartInterval, re-seeding apps and restarting the Dock forever.
+  /bin/launchctl bootout system/com.tlc.dock.seed >/dev/null 2>&1 || true
 }
 
 # dockutil --add, tolerating the "already exists in dock" non-error.
