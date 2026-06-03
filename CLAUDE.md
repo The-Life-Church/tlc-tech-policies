@@ -10,6 +10,7 @@ Managed IT policy for The Life Church staff Macs and Claude surfaces. **Merging 
 
 - Scripts run as root via `curl | bash` from Mosyle. Treat every edit as fleet-impacting.
 - Test scripts before merge: `bash -n` at minimum; logic changes get a real run on a test Mac.
+- Validate workflow YAML with `ruby -ryaml -e "YAML.safe_load(File.read('<file>'), aliases: true)"` — stock macOS has no PyYAML. JSON: `/usr/bin/python3 -m json.tool <file>`.
 - Mosyle's root shell has a stripped PATH — use absolute paths for anything outside `/usr/bin:/bin:/usr/sbin:/sbin`.
 
 ## Adding a managed tool installer — do all four
@@ -30,6 +31,8 @@ Exceptions: tools with no version pin need no workflow entry (CLT installs via `
 - **macOS has no GNU `timeout`** — scripts use the perl `alarm` shim (see any installer).
 - **Three Claude policy artifacts in `software/claude/`:** `CLAUDE.md` (fleet behavioral policy), `managed-settings.json` (deny list), `ADMIN.md` (Claude.ai org prefs). When a deny rule changes, sync the human-readable lists in the fleet `CLAUDE.md` ("When a Command Is Blocked") and `software/shell/README.md`.
 - **Shell policy wrappers** (`software/shell/`) only affect interactive zsh — npm scripts and git hooks are unaffected. Keep the vibe-coder block list in parity with `managed-settings.json` where it makes sense (installs and package runners blocked; restores and `npm run` allowed).
+- **`chore/bump-<slug>-<version>` branch names are reserved** — `bump-pins.yml` uses branch existence as its already-open dedupe; creating one manually suppresses that tool's bump PR.
+- **Testing shell-policy wrappers:** extract the heredoc and source it in a sandboxed zsh with `command`/PATH stubbed *first* — a bad extraction means the real package managers run (this has happened).
 
 ## Docs to keep in sync
 
