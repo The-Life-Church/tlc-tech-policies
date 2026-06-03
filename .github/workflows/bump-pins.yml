@@ -23,6 +23,12 @@
 #
 # Requires repo setting: Settings -> Actions -> General ->
 #   "Allow GitHub Actions to create and approve pull requests"
+#
+# Google Chat alerts (same pattern as tlc-claude-plugins):
+#   - Repo secret CHAT_WEBHOOK_URL (per-repo webhook into the shared Chat space).
+#     Unset secret -> notify steps log and exit 0; everything else still works.
+#   - ✅ posted when a job opens a bump PR; ❌ posted when a job fails.
+#   - Silent on no-ops (pin current, cooldown not met, branch already open).
 
 name: Bump installer pins
 
@@ -58,6 +64,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Check Node.js LTS
+        id: bump
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -100,7 +107,7 @@ jobs:
           git commit -m "Bump Node.js pin: ${CURRENT} -> ${LATEST}"
           git push origin "$BRANCH"
 
-          gh pr create \
+          PR_URL=$(gh pr create \
             --title "Bump Node.js pin: ${CURRENT} -> ${LATEST}" \
             --body "$(cat <<EOF
           Automated pin bump from the \`bump-pins\` workflow.
@@ -113,7 +120,45 @@ jobs:
           Review checklist: release notes look sane, version is a real LTS release on nodejs.org.
           On merge, devices converge on their next recurring Mosyle run.
           EOF
-          )"
+          )")
+
+          # Hand the PR details to the Chat notify step
+          {
+            echo "pr_url=${PR_URL}"
+            echo "old=${CURRENT}"
+            echo "new=${LATEST}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Notify Google Chat (bump PR opened)
+        if: ${{ steps.bump.outputs.pr_url != '' }}
+        env:
+          WEBHOOK: ${{ secrets.CHAT_WEBHOOK_URL }}
+          PR_URL: ${{ steps.bump.outputs.pr_url }}
+          OLD: ${{ steps.bump.outputs.old }}
+          NEW: ${{ steps.bump.outputs.new }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REPO: ${{ github.repository }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "CHAT_WEBHOOK_URL secret not set — skipping notify."; exit 0; fi
+          TEXT=$(printf '%s\n%s' \
+            "<${RUN_URL}|Bump installer pins> · <${REPO_URL}|${REPO}>" \
+            "✅ Node.js: ${OLD} -> ${NEW} — <${PR_URL}|review the PR>")
+          jq -n --arg text "$TEXT" '{text: $text}' | curl -fsS -X POST -H 'Content-Type: application/json' -d @- "$WEBHOOK"
+
+      - name: Notify Google Chat (job failed)
+        if: ${{ failure() }}
+        env:
+          WEBHOOK: ${{ secrets.CHAT_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REPO: ${{ github.repository }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "CHAT_WEBHOOK_URL secret not set — skipping notify."; exit 0; fi
+          TEXT=$(printf '%s\n%s' \
+            "<${RUN_URL}|Bump installer pins> · <${REPO_URL}|${REPO}>" \
+            "❌ Node.js job failed — <${RUN_URL}|run logs>")
+          jq -n --arg text "$TEXT" '{text: $text}' | curl -fsS -X POST -H 'Content-Type: application/json' -d @- "$WEBHOOK"
 
   # ── Everything that ships via GitHub releases: one matrix entry per tool. ──
   # version_var is replaced in `file`; if sha_var is set, the SHA-256 is pulled
@@ -152,6 +197,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Check ${{ matrix.name }}
+        id: bump
         env:
           GH_TOKEN: ${{ github.token }}
           NAME: ${{ matrix.name }}
@@ -211,7 +257,7 @@ jobs:
           git commit -m "Bump ${NAME} pin: ${CURRENT} -> ${LATEST}"
           git push origin "$BRANCH"
 
-          gh pr create \
+          PR_URL=$(gh pr create \
             --title "Bump ${NAME} pin: ${CURRENT} -> ${LATEST}" \
             --body "$(cat <<EOF
           Automated pin bump from the \`bump-pins\` workflow.
@@ -225,4 +271,44 @@ jobs:
           Review checklist: release notes look sane, release is real on ${REPO}.
           On merge, devices converge on their next recurring Mosyle run.
           EOF
-          )"
+          )")
+
+          # Hand the PR details to the Chat notify step
+          {
+            echo "pr_url=${PR_URL}"
+            echo "old=${CURRENT}"
+            echo "new=${LATEST}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Notify Google Chat (bump PR opened)
+        if: ${{ steps.bump.outputs.pr_url != '' }}
+        env:
+          WEBHOOK: ${{ secrets.CHAT_WEBHOOK_URL }}
+          NAME: ${{ matrix.name }}
+          PR_URL: ${{ steps.bump.outputs.pr_url }}
+          OLD: ${{ steps.bump.outputs.old }}
+          NEW: ${{ steps.bump.outputs.new }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GH_REPO: ${{ github.repository }}
+          GH_REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "CHAT_WEBHOOK_URL secret not set — skipping notify."; exit 0; fi
+          TEXT=$(printf '%s\n%s' \
+            "<${RUN_URL}|Bump installer pins> · <${GH_REPO_URL}|${GH_REPO}>" \
+            "✅ ${NAME}: ${OLD} -> ${NEW} — <${PR_URL}|review the PR>")
+          jq -n --arg text "$TEXT" '{text: $text}' | curl -fsS -X POST -H 'Content-Type: application/json' -d @- "$WEBHOOK"
+
+      - name: Notify Google Chat (job failed)
+        if: ${{ failure() }}
+        env:
+          WEBHOOK: ${{ secrets.CHAT_WEBHOOK_URL }}
+          NAME: ${{ matrix.name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GH_REPO: ${{ github.repository }}
+          GH_REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "CHAT_WEBHOOK_URL secret not set — skipping notify."; exit 0; fi
+          TEXT=$(printf '%s\n%s' \
+            "<${RUN_URL}|Bump installer pins> · <${GH_REPO_URL}|${GH_REPO}>" \
+            "❌ ${NAME} job failed — <${RUN_URL}|run logs>")
+          jq -n --arg text "$TEXT" '{text: $text}' | curl -fsS -X POST -H 'Content-Type: application/json' -d @- "$WEBHOOK"
