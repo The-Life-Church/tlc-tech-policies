@@ -18,10 +18,11 @@ Allows normal terminal and development work, but blocks specific system-level co
 **What it blocks:**
 - `sudo` — privilege escalation
 - `brew install` — installing software packages
-- `npm install -g` — installing global Node packages
-- `pip install --system` / `pip3 install --system` — installing Python packages system-wide
+- `npm install <package>` / `pnpm add` / `yarn add` / `bun add` — installing new Node packages
+- `npx` / `npm exec` / `pnpm dlx` / `yarn dlx` / `bunx` / `bun x` — package runners that download *and execute* registry code in one step (same supply-chain surface as an install)
+- `pip install <package>` / `pip3 install <package>` — installing new Python packages
 
-Everything else — git, running local servers, scripts, project work — works normally.
+**What still works:** dependency restores (`npm install` with no args, `pnpm install`, `yarn`, `bun install`, `pip install -r requirements.txt`), `npm run` scripts, git, local servers, and all normal project work. The wrappers only apply to interactive Terminal sessions — npm scripts and git hooks run non-interactively and are unaffected.
 
 **Deployed by:** `deploy-shell-policy-vibe-coders.sh`
 **Mosyle scope:** Vibe Coders/Claude Users device group

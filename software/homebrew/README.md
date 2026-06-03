@@ -1,6 +1,8 @@
 # Homebrew — Silent Installer
 
-This folder contains the silent installer for Homebrew, deployed to Life Church Macs via Mosyle. It pairs with the Xcode CLT installer in `software/xcode/` (prereq) and the gh installer in `software/gh/` (which depends on brew) to make up the baseline dev-tools rollout.
+This folder contains the silent installer for Homebrew, deployed to Life Church Macs via Mosyle. The Xcode CLT installer in `software/xcode/` is a prerequisite.
+
+> **Scope: IT-dev only.** Homebrew is no longer part of the standard dev-tools chain — `gh` now installs from its official pkg (`software/gh/`) with no brew dependency. Brew is per-user, refuses to run as root, and bootstrapping it requires a temporary `NOPASSWD: ALL` sudoers window (see below), so it stays scoped to IT-dev machines that want it for their own tooling — don't deploy it to vibe coders or general staff.
 
 ---
 

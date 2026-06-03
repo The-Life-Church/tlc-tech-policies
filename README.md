@@ -4,9 +4,7 @@
 
 Policies, configuration files, and deployment scripts that IT manages across Life Church Macs and Claude surfaces. Delivered via Mosyle (managed Macs) and the Claude admin console (Claude.ai chat, Cowork). Organized by area so each piece can be found, reviewed, and updated independently.
 
-Skills and the Claude Code plugin marketplace live in the companion private repo [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) — see *How TLC's Claude policy spans every surface* below for how the two repos fit together.
-
-See [`STRUCTURE.md`](./STRUCTURE.md) for the full repo map and canonical raw URLs.
+Skills and the Claude Code plugin marketplace live in the companion private repo [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) — see *How TLC's Claude policy spans every surface* below for how the two repos fit together. (Skills moved there because the Claude.ai admin console only accepts private GitHub skill sources; everything else stays public so Mosyle's unauthenticated `raw.githubusercontent.com` pulls keep working.)
 
 ---
 
@@ -14,18 +12,24 @@ See [`STRUCTURE.md`](./STRUCTURE.md) for the full repo map and canonical raw URL
 
 ```
 tlc-tech-policies/
+├── .github/workflows/
+│   └── bump-pins.yml ← Watches upstream releases, opens PRs bumping installer version pins
 ├── software/
 │   ├── claude/       ← Claude Code policy, Claude.ai org-preferences block, managed settings
 │   ├── shell/        ← Terminal shell restrictions deployed via Mosyle
 │   ├── xcode/        ← Xcode Command Line Tools silent installer
-│   ├── homebrew/     ← Homebrew silent installer
-│   ├── gh/           ← GitHub CLI silent installer (requires homebrew)
+│   ├── homebrew/     ← Homebrew silent installer (IT-dev only — not in the standard chain)
+│   ├── gh/           ← GitHub CLI silent installer (official pkg, pinned version + SHA)
+│   ├── node/         ← Node.js LTS silent installer (official pkg, pinned version + SHA)
+│   ├── security/     ← Ad-hoc read-only threat scans (Shai-Hulud npm worm scanner)
 │   └── chrome/       ← Chrome managed prefs: force-install Google PWAs (Mosyle Per-App Config)
 └── hardware/
     └── dock/         ← Staff Dock seeding (curl|bash bootstrap; + selective Gemini add)
 ```
 
-Each folder has its own `README.md` covering what's inside and how it deploys. Start there for details.
+Each folder has its own `README.md` — the source of truth for what's inside, how it deploys, scope, and exit codes. Start there for details; this file is just the map.
+
+**Adding a tool installer?** Follow the four-step checklist in [`CLAUDE.md`](./CLAUDE.md) — especially step 3, adding the tool to `bump-pins.yml`, or its version pin silently goes stale.
 
 ---
 
@@ -45,120 +49,40 @@ Skills live in the private companion repo because the Claude.ai admin console on
 
 ---
 
-## software/claude
+## Areas
 
-Controls how Claude Code behaves on managed Macs. Two layers:
-
-| Layer | What it is | Delivery |
+| Area | What it is | Scope |
 |---|---|---|
-| **Behavioral policy** | `CLAUDE.md` — instructions loaded into every Claude Code session | Mosyle (`deploy-claude-policy.sh`) |
-| **Managed settings** | `managed-settings.json` — deny list and bypass mode | Mosyle (`deploy-managed-settings.sh`) + Claude admin console |
+| [`software/claude`](./software/claude/README.md) | Claude Code fleet policy (`CLAUDE.md`), deny list (`managed-settings.json`), Claude.ai org prefs (`ADMIN.md`) | All managed Macs + admin console |
+| [`software/shell`](./software/shell/README.md) | Terminal restrictions via `/etc/zshrc` — full block (general staff) or selective block of installs/package runners (vibe coders) | Per device group |
+| [`software/xcode`](./software/xcode/README.md) | Headless CLT installer with `git --version` health check (self-heals after macOS upgrades) | Anyone needing git, incl. Claude Code desktop app users |
+| [`software/gh`](./software/gh/README.md) | GitHub CLI from official pkg — pinned version + SHA | Vibe coders / IT-dev, recurring |
+| [`software/node`](./software/node/README.md) | Node.js LTS from official pkg — pinned version + SHA. **Not fleet-wide** (desktop app doesn't need Node) | IT-dev / vibe coders, recurring; pair with Shai-Hulud scan |
+| [`software/homebrew`](./software/homebrew/README.md) | Homebrew installer — **IT-dev only**, not in the standard chain | IT-dev |
+| [`software/security`](./software/security/README.md) | Ad-hoc read-only threat scans (Shai-Hulud npm worm scanner) | Node-bearing machines |
+| [`software/chrome`](./software/chrome/README.md) | Force-install Google PWAs via Chrome Enterprise Core | Top-level org |
+| [`hardware/dock`](./hardware/dock/README.md) | Dock seeding at enrollment via pinned dockutil | Provisioning group, one-time |
 
-See [`software/claude/README.md`](./software/claude/README.md) for the full rundown.
+**How pinned installers stay current:** [`bump-pins.yml`](./.github/workflows/bump-pins.yml) checks upstream weekly and opens a PR bumping version + SHA once a release is ≥14 days old (supply-chain cooldown; manual dispatch overrides for urgent security fixes). Merging the PR is the deploy — devices converge on their next recurring Mosyle run.
 
----
-
-## software/shell
-
-Restricts dangerous terminal commands on managed Macs via `/etc/zshrc`. Two policies, two device groups:
-
-| File | Group | Blocks |
-|---|---|---|
-| `deploy-shell-policy-vibe-coders.sh` | Vibe coders (limited terminal) | `sudo`, `brew install`, package installs (`npm install <pkg>`, `pip install <pkg>`) — dependency restores allowed |
-| `deploy-shell-policy-default.sh` | General staff (no terminal) | Full terminal block — session exits immediately with IT contact message |
-
-See [`software/shell/README.md`](./software/shell/README.md) for deployment.
+Skills + the plugin marketplace live in the private [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) repo.
 
 ---
 
-## software/xcode
+## Canonical raw URLs
 
-Silent installer for Xcode Command Line Tools, deployed via Mosyle. Runs headless using the `softwareupdate` trick (no GUI prompt). Skips if CLT is already installed. Wrapped in `timeout 1800` so a stuck Apple CDN can't hang the device. Logs to `/tmp/clt-install-<timestamp>.log` — cleaned up on success, kept on failure.
+For tools and Mosyle scripts that need to fetch the latest version of a file:
 
-**Mosyle → Custom Scripts → paste:**
-```bash
-# TLC Xcode Command Line Tools — Silent Install
-curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/xcode/install-clt.sh" | bash
-```
+| File | Raw URL |
+|---|---|
+| Claude Code policy | `https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/claude/CLAUDE.md` |
+| Managed settings | `https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/claude/managed-settings.json` |
 
-Scope to any device group that needs CLT (e.g., vibe coders, developers). Can run as a one-time or recurring script. See [`software/xcode/README.md`](./software/xcode/README.md) for details.
-
----
-
-## software/homebrew
-
-Silent installer for Homebrew, deployed via Mosyle. Mosyle runs it as root for deploy consistency; the script drops to the console user internally because Homebrew refuses to install as root, and grants temporary NOPASSWD sudo via `/etc/sudoers.d` (auto-removed via `trap` on every exit path) so the installer's internal `sudo` calls succeed without prompting. Requires CLT — fails fast if `xcode-select -p` returns nothing. Idempotent.
-
-**Mosyle → Custom Scripts → paste:**
-```bash
-# TLC Homebrew — Silent Install (run as root; script drops to console user)
-curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/homebrew/install.sh" | bash
-```
-
-Scope to vibe coders / IT-dev group. Deploy after the CLT installer. See [`software/homebrew/README.md`](./software/homebrew/README.md) for details.
-
----
-
-## software/gh
-
-Silent installer for the GitHub CLI (`gh`), deployed via Mosyle. Runs `brew install gh` (or `brew upgrade gh` on recurring runs) as the console user — no sudo dance needed since brew's prefix is already user-owned after install. Requires Homebrew. Idempotent.
-
-**Mosyle → Custom Scripts → paste:**
-```bash
-# TLC gh — Silent Install (run as root; script drops to console user)
-curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/gh/install.sh" | bash
-```
-
-Scope to vibe coders / IT-dev group. Deploy after the Homebrew installer. See [`software/gh/README.md`](./software/gh/README.md) for details.
-
----
-
-## software/chrome
-
-Force-installs the standard Google web apps (Gmail, Calendar, Meet, Chat, Drive, Docs,
-Sheets, Slides) as PWAs on managed Macs via Chrome's `WebAppInstallForceList`. Delivered from
-the **Google Workspace Admin console** (Chrome Enterprise Core), force-installed at the
-**top-level org** — not a script (the Mosyle Per-App Config PLIST is a fallback route). Pairs
-with `hardware/dock`: once Chrome installs the PWAs, the dock seeder docks them.
-
-See [`software/chrome/README.md`](./software/chrome/README.md) for deploy steps and the
-required bundle-id verification.
-
----
-
-## skills + plugin marketplace
-
-Skills live in the private [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) repo, not here. That repo ships the `innovation` plugin (containing the `idea` skill) via a Claude Code marketplace and syncs into the Claude.ai admin console for chat + Cowork. See its README for the install commands and how it relates to this repo.
-
----
-
-## hardware/dock
-
-Seeds a clean, standard Dock on managed Macs at setup. Wipes the Dock to a clean slate on
-first run, then adds the managed Google + ClickUp + Self Service app set in order via
-`dockutil` (pulled from its signed upstream release — not vendored here). A short-lived
-LaunchDaemon retries to catch apps, including Chrome PWAs, that finish installing after first
-boot, then removes itself. Replaces the former standalone `tlc-dock-seed` `.pkg`. A separate
-one-time script (`add-gemini-to-dock.sh`) adds Gemini to an **existing** Mac's Dock
-(append-only, no wipe) — for Macs that didn't go through the enrollment seed.
-
-**Mosyle → Custom Scripts → paste, scope to provisioning group, run ONE-TIME:**
-```bash
-# TLC Staff Dock — bootstrap (run as root, one-time)
-curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/hardware/dock/install-staff-dock.sh" | bash
-```
-
-See [`hardware/dock/README.md`](./hardware/dock/README.md) for the managed app list, status
-checks, retry/re-wipe, and rollback.
-
-## hardware
-
-More device-level policy (Mac provisioning, additional hardware config) — coming as needed.
+The `tlc-claude-plugins` marketplace is referenced as `The-Life-Church/tlc-claude-plugins` in Claude Code's `/plugin marketplace add` command (requires `gh auth` for private-repo access).
 
 ---
 
 ## Contributing
 
-- Never push directly to `main` — all changes require a PR with at least one reviewer
 - Scripts deploy to managed Macs automatically after merge — review carefully before approving
 - Questions? Reach out to IT.

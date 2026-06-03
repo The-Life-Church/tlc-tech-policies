@@ -5,13 +5,23 @@
 # ===== What to put in Mosyle =================================================
 #   Mosyle -> Scripts (Custom Command) -> new shell script
 #     Name:   TLC Xcode Command Line Tools — Silent Install
-#     Run:    Once or recurring     As: root     Scope: any group needing CLT (vibe coders, devs)
+#     Run:    Once or recurring     As: root     Scope: any group needing git — vibe
+#             coders, devs, and anyone receiving the Claude Code desktop app (it
+#             hard-gates on git)
 #     Script:
 #       #!/bin/bash
 #       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/xcode/install-clt.sh | bash
+#
+#   Note: macOS major upgrades leave CLT present but broken. If scheduled "once",
+#   re-run this on the fleet after each major OS upgrade. The health check below
+#   makes recurring runs nearly free (healthy machines exit 0 in under a second).
 # =============================================================================
 #
-# Failures are captured in the log file and reflected in the exit code.
+# Failures are captured in the log file and reflected in the exit code:
+#   0 — CLT healthy (already installed, or installed successfully)
+#   1 — install failed (download/install error, or still broken after install)
+#   3 — software update catalog returned no CLT package (catalog parse breakage
+#       or an MDM update deferral hiding the label — see README fallback)
 
 set -euo pipefail
 
@@ -32,25 +42,54 @@ timeout() {
     perl -e 'alarm shift; exec @ARGV' "$@"
 }
 
-# --- Guard: already installed ---
-if xcode-select -p &>/dev/null; then
-    log "CLT already installed at $(xcode-select -p). Nothing to do."
+CLT_PATH="/Library/Developer/CommandLineTools"
+SENTINEL="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
+
+# Remove the sentinel on every exit path — success, error, or signal. With
+# `set -euo pipefail` an early failure (e.g. catalog grep finding nothing)
+# would otherwise leak it.
+cleanup() {
+    rm -f "$SENTINEL"
+}
+trap cleanup EXIT INT TERM
+
+# --- Guard: healthy install already present ---
+# `xcode-select -p` alone is not enough: macOS major upgrades leave the CLT
+# directory (and the xcode-select pointer) in place while the tools inside go
+# stale or break. Health = the selected developer dir's git actually runs.
+# This also passes on machines with full Xcode selected instead of CLT.
+DEV_DIR=$(xcode-select -p 2>/dev/null || echo "")
+if [ -n "$DEV_DIR" ] && [ -x "${DEV_DIR}/usr/bin/git" ] && "${DEV_DIR}/usr/bin/git" --version &>/dev/null; then
+    log "Developer tools healthy at ${DEV_DIR} ($("${DEV_DIR}/usr/bin/git" --version)). Nothing to do."
     rm -f "$LOG_FILE"
     exit 0
 fi
 
-log "CLT not found. Starting install on ${HOSTNAME} (${SERIAL})."
+# --- Stale install: clear it so softwareupdate offers a fresh package ---
+if [ -n "$DEV_DIR" ]; then
+    log "Developer dir present at ${DEV_DIR} but git is broken or missing (common after a macOS upgrade)."
+    if [ "$DEV_DIR" = "$CLT_PATH" ] && [ -d "$CLT_PATH" ]; then
+        log "Removing stale CLT at ${CLT_PATH} before reinstall."
+        rm -rf "$CLT_PATH"
+    else
+        log "WARNING: Selected dir is not the CLT path (likely a broken Xcode install). Installing CLT anyway; the xcode-select pointer may need manual attention."
+    fi
+fi
+
+log "Starting CLT install on ${HOSTNAME} (${SERIAL})."
 
 # Signal softwareupdate to include CLT in the catalog
-touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+touch "$SENTINEL"
 
 log "Searching software update catalog for CLT package..."
-PROD=$(softwareupdate -l 2>&1 | grep -o 'Command Line Tools for Xcode-[0-9.]*' | sort -V | tail -1)
+# Filter beta-seed lines before extracting the label, and `|| true` so an
+# empty catalog falls through to the explicit exit-3 check instead of dying
+# silently under pipefail.
+PROD=$(softwareupdate -l 2>&1 | grep 'Command Line Tools' | grep -vi 'beta' | grep -o 'Command Line Tools for Xcode-[0-9.]*' | sort -V | tail -1 || true)
 
 if [ -z "$PROD" ]; then
-    log "ERROR: No CLT package found in software update catalog."
-    rm -f /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
-    exit 1
+    log "ERROR: No CLT package found in software update catalog. Apple may have changed the 'softwareupdate -l' output format, or an MDM software-update deferral is hiding the label. Fallback: push Apple's CLT .pkg directly (see README)."
+    exit 3
 fi
 
 log "Found package: ${PROD}. Installing (30 min timeout)..."
@@ -58,18 +97,15 @@ log "Found package: ${PROD}. Installing (30 min timeout)..."
 # timeout exits 124 on timeout; pipefail surfaces that through the pipeline.
 if ! timeout 1800 softwareupdate -i "$PROD" --verbose 2>&1 | tee -a "$LOG_FILE"; then
     log "ERROR: softwareupdate failed or timed out."
-    rm -f /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
     exit 1
 fi
 
-rm -f /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
-
-# --- Verify ---
-if xcode-select -p &>/dev/null; then
-    log "CLT installed successfully at $(xcode-select -p)."
+# --- Verify: same functional check as the guard, not just path presence ---
+if [ -x "${CLT_PATH}/usr/bin/git" ] && "${CLT_PATH}/usr/bin/git" --version &>/dev/null; then
+    log "CLT installed and verified at ${CLT_PATH} ($("${CLT_PATH}/usr/bin/git" --version))."
     rm -f "$LOG_FILE"
     exit 0
 else
-    log "ERROR: Install appeared to complete but xcode-select -p still fails."
+    log "ERROR: Install appeared to complete but git at ${CLT_PATH} is missing or broken."
     exit 1
 fi

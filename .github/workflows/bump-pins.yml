@@ -1,0 +1,228 @@
+# Bump installer pins — watches upstream releases for every version-pinned
+# installer in this repo and opens a PR updating the pin (version + SHA-256
+# where the script pins one) when a new release has survived the cooldown.
+#
+# ── Adding a new pinned installer ─────────────────────────────────────────────
+# If the tool ships via GitHub releases: add an entry to the `github-release`
+# job's matrix below — name, slug, repo, file, version_var, and (if the script
+# pins a checksum) sha_var + checksums_asset + asset. That's it.
+# If it ships from somewhere else (like Node's dist index), add a dedicated job
+# modeled on the `node` job.
+# Tools with no pin (e.g. Homebrew — always-latest installer, self-updating)
+# have nothing to bump and don't belong here.
+# Convention note also lives in STRUCTURE.md ("How tool installers stay current").
+#
+# Supply-chain posture:
+#   - COOLDOWN_DAYS (default 14): a release younger than this is skipped —
+#     compromised releases are usually detected and yanked within days, so
+#     waiting lets the ecosystem do canary duty. Override via manual dispatch
+#     for actively-exploited security fixes.
+#   - The workflow never touches main. Every bump is a PR a human reviews:
+#     check the linked release notes, then merge. Devices converge on their
+#     next recurring Mosyle run.
+#
+# Requires repo setting: Settings -> Actions -> General ->
+#   "Allow GitHub Actions to create and approve pull requests"
+
+name: Bump installer pins
+
+on:
+  schedule:
+    - cron: '17 14 * * 1' # Mondays 14:17 UTC (~8:17/9:17 AM Memphis)
+  workflow_dispatch:
+    inputs:
+      ignore_cooldown:
+        description: 'Bump even if the release is younger than the cooldown (use for urgent security releases)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  COOLDOWN_DAYS: 14
+  IGNORE_COOLDOWN: ${{ inputs.ignore_cooldown == true && 'true' || 'false' }}
+
+jobs:
+  # ── Node.js: special-cased because the source of truth is nodejs.org's dist
+  # index (first entry with an "lts" name), not a GitHub release.
+  node:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Check Node.js LTS
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          FILE="software/node/install.sh"
+
+          CURRENT=$(grep -m1 '^NODE_VERSION=' "$FILE" | cut -d'"' -f2)
+
+          RELEASE=$(curl -fsSL https://nodejs.org/dist/index.json | jq -c '[.[] | select(.lts != false)][0]')
+          LATEST=$(echo "$RELEASE" | jq -r '.version')
+          REL_DATE=$(echo "$RELEASE" | jq -r '.date')
+
+          if [ "$LATEST" = "$CURRENT" ]; then
+            echo "Node pin is current ($CURRENT). Nothing to do."
+            exit 0
+          fi
+
+          AGE_DAYS=$(( ( $(date +%s) - $(date -d "$REL_DATE" +%s) ) / 86400 ))
+          if [ "$IGNORE_COOLDOWN" != "true" ] && [ "$AGE_DAYS" -lt "$COOLDOWN_DAYS" ]; then
+            echo "Node $LATEST is only ${AGE_DAYS}d old (< ${COOLDOWN_DAYS}d cooldown). Skipping until it ages."
+            exit 0
+          fi
+
+          BRANCH="chore/bump-node-${LATEST}"
+          if git ls-remote --exit-code origin "refs/heads/${BRANCH}" >/dev/null 2>&1; then
+            echo "Branch ${BRANCH} already exists — PR presumably open. Skipping."
+            exit 0
+          fi
+
+          SHA=$(curl -fsSL "https://nodejs.org/dist/${LATEST}/SHASUMS256.txt" | awk -v pkg="node-${LATEST}.pkg" '$2 == pkg {print $1}')
+          if [ -z "$SHA" ]; then
+            echo "ERROR: could not find SHA for node-${LATEST}.pkg in SHASUMS256.txt"
+            exit 1
+          fi
+
+          git checkout -b "$BRANCH"
+          sed -i "s|^NODE_VERSION=\".*\"|NODE_VERSION=\"${LATEST}\"|" "$FILE"
+          sed -i "s|^NODE_SHA256=\".*\"|NODE_SHA256=\"${SHA}\"|" "$FILE"
+          git add "$FILE"
+          git commit -m "Bump Node.js pin: ${CURRENT} -> ${LATEST}"
+          git push origin "$BRANCH"
+
+          gh pr create \
+            --title "Bump Node.js pin: ${CURRENT} -> ${LATEST}" \
+            --body "$(cat <<EOF
+          Automated pin bump from the \`bump-pins\` workflow.
+
+          - **Version:** \`${CURRENT}\` -> \`${LATEST}\`
+          - **Release date:** ${REL_DATE} (${AGE_DAYS} days old; cooldown ${COOLDOWN_DAYS}d, ignore_cooldown=${IGNORE_COOLDOWN})
+          - **SHA-256:** \`${SHA}\` (from [SHASUMS256.txt](https://nodejs.org/dist/${LATEST}/SHASUMS256.txt))
+          - **Release notes:** https://github.com/nodejs/node/releases/tag/${LATEST}
+
+          Review checklist: release notes look sane, version is a real LTS release on nodejs.org.
+          On merge, devices converge on their next recurring Mosyle run.
+          EOF
+          )"
+
+  # ── Everything that ships via GitHub releases: one matrix entry per tool. ──
+  # version_var is replaced in `file`; if sha_var is set, the SHA-256 is pulled
+  # from checksums_asset ({V} = bare version) and replaced too. Tools without a
+  # pinned SHA (signed pkgs verified by Gatekeeper/installer) leave sha_var "".
+  github-release:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: GitHub CLI
+            slug: gh
+            repo: cli/cli
+            file: software/gh/install.sh
+            version_var: GH_VERSION
+            sha_var: GH_SHA256
+            checksums_asset: gh_{V}_checksums.txt
+            asset: gh_{V}_macOS_universal.pkg
+            note: 'Reminder: this pkg ships **unsigned** — the pinned SHA is the only integrity check.'
+          - name: dockutil
+            slug: dockutil
+            repo: kcrawford/dockutil
+            file: hardware/dock/install-staff-dock.sh
+            version_var: DOCKUTIL_VERSION
+            sha_var: ''
+            checksums_asset: ''
+            asset: ''
+            note: 'Signed Developer ID pkg (no SHA pinned in the script — installer verifies the signature).'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Check ${{ matrix.name }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NAME: ${{ matrix.name }}
+          SLUG: ${{ matrix.slug }}
+          REPO: ${{ matrix.repo }}
+          FILE: ${{ matrix.file }}
+          VERSION_VAR: ${{ matrix.version_var }}
+          SHA_VAR: ${{ matrix.sha_var }}
+          CHECKSUMS_ASSET: ${{ matrix.checksums_asset }}
+          ASSET: ${{ matrix.asset }}
+          NOTE: ${{ matrix.note }}
+        run: |
+          set -euo pipefail
+
+          CURRENT=$(grep -m1 "^${VERSION_VAR}=" "$FILE" | cut -d'"' -f2)
+
+          RELEASE=$(gh api "repos/${REPO}/releases/latest")
+          TAG=$(echo "$RELEASE" | jq -r '.tag_name')
+          LATEST="${TAG#v}" # bare version whether or not the tag has a v prefix
+          PUBLISHED=$(echo "$RELEASE" | jq -r '.published_at')
+
+          if [ "$LATEST" = "$CURRENT" ]; then
+            echo "${NAME} pin is current (${CURRENT}). Nothing to do."
+            exit 0
+          fi
+
+          AGE_DAYS=$(( ( $(date +%s) - $(date -d "$PUBLISHED" +%s) ) / 86400 ))
+          if [ "$IGNORE_COOLDOWN" != "true" ] && [ "$AGE_DAYS" -lt "$COOLDOWN_DAYS" ]; then
+            echo "${NAME} ${LATEST} is only ${AGE_DAYS}d old (< ${COOLDOWN_DAYS}d cooldown). Skipping until it ages."
+            exit 0
+          fi
+
+          BRANCH="chore/bump-${SLUG}-${LATEST}"
+          if git ls-remote --exit-code origin "refs/heads/${BRANCH}" >/dev/null 2>&1; then
+            echo "Branch ${BRANCH} already exists — PR presumably open. Skipping."
+            exit 0
+          fi
+
+          SHA_LINE=""
+          if [ -n "$SHA_VAR" ]; then
+            CHECKSUMS_FILE="${CHECKSUMS_ASSET//\{V\}/$LATEST}"
+            ASSET_FILE="${ASSET//\{V\}/$LATEST}"
+            SHA=$(curl -fsSL "https://github.com/${REPO}/releases/download/${TAG}/${CHECKSUMS_FILE}" | awk -v pkg="$ASSET_FILE" '$2 == pkg {print $1}')
+            if [ -z "$SHA" ]; then
+              echo "ERROR: could not find SHA for ${ASSET_FILE} in ${CHECKSUMS_FILE}"
+              exit 1
+            fi
+            SHA_LINE="- **SHA-256:** \`${SHA}\` (from [${CHECKSUMS_FILE}](https://github.com/${REPO}/releases/download/${TAG}/${CHECKSUMS_FILE}))"
+          fi
+
+          git checkout -b "$BRANCH"
+          sed -i "s|^${VERSION_VAR}=\".*\"|${VERSION_VAR}=\"${LATEST}\"|" "$FILE"
+          if [ -n "$SHA_VAR" ]; then
+            sed -i "s|^${SHA_VAR}=\".*\"|${SHA_VAR}=\"${SHA}\"|" "$FILE"
+          fi
+          git add "$FILE"
+          git commit -m "Bump ${NAME} pin: ${CURRENT} -> ${LATEST}"
+          git push origin "$BRANCH"
+
+          gh pr create \
+            --title "Bump ${NAME} pin: ${CURRENT} -> ${LATEST}" \
+            --body "$(cat <<EOF
+          Automated pin bump from the \`bump-pins\` workflow.
+
+          - **Version:** \`${CURRENT}\` -> \`${LATEST}\`
+          - **Published:** ${PUBLISHED} (${AGE_DAYS} days old; cooldown ${COOLDOWN_DAYS}d, ignore_cooldown=${IGNORE_COOLDOWN})
+          ${SHA_LINE}
+          - **Release notes:** https://github.com/${REPO}/releases/tag/${TAG}
+
+          ${NOTE}
+          Review checklist: release notes look sane, release is real on ${REPO}.
+          On merge, devices converge on their next recurring Mosyle run.
+          EOF
+          )"
