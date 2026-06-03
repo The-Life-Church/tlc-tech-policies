@@ -34,6 +34,8 @@ Downloads the pinned per-arch release tarball (`hf_<ver>_darwin_{arm64,amd64}.ta
 
 **Not fleet-wide.** Scope the Mosyle script to machines that actually use Higgsfield: the creative team and IT-dev. The consuming side is the `higgsfield` plugin in the private `tlc-claude-plugins` repo (also opt-in, via `/plugin install higgsfield@tlc-claude-plugins`) — its skill preamble prefers this CLI when it's on `$PATH` and falls back to the org's Higgsfield MCP connector otherwise. The CLI unlocks the CLI-only enhancers (product-photoshoot, marketplace-cards).
 
+**This installer is what makes the skills work fully in Claude Code.** The upstream skills expect the CLI on `$PATH` — their original "Step 0" self-installs it via `curl … | sh`, which is denied fleet-wide in managed-settings (unpinned, unreviewed, and it would die on `sudo` anyway). Don't allow that command to "fix" the skills; the IT path is: user wants the Higgsfield skills fully working in Claude Code → add their Mac to this script's Mosyle scope → CLI is pre-installed and pinned before the skill ever runs → the skill's `$PATH` check passes. Machines without the CLI aren't broken — the skill preamble routes them to the MCP connector (minus the two CLI-only enhancers, stated plainly to the user).
+
 ---
 
 ## Files
