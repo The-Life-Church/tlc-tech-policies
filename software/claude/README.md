@@ -53,13 +53,19 @@ A JSON settings file deployed to `/Library/Application Support/ClaudeCode/manage
 - `curl ... | bash` or `wget ... | bash` — piping remote scripts directly into execution
 - `chmod` / `chown` — changing file permissions or ownership
 - `brew install` — installing software packages
-- `npm install -g` — installing global Node packages
-- `pip install --system` — installing Python packages system-wide
-- `launchctl` / `systemctl` — managing system services
+- `npm install` — installing Node packages (including bare restores)
+- npm-ecosystem package runners and installers — `npx`, `npm exec`, `pnpm install/add/dlx`, `yarn add/dlx`, `bun install/add`, `bunx` (these download and execute registry code in one step)
+- `pip install` / `pip3 install` — including the bypasses `python -m pip install`, `uv pip install`, and `uvx`
+- `killall` / `pkill`, `crontab`, `launchctl` / `systemctl` — process and service management
 - `git push --force` — force-pushing to a git repo
 - Reading `.env` files, `*.pem`, `*.key`, or anything in a `secrets/` folder
 
-Users can still run any of these themselves in Terminal — this only prevents Claude from doing it automatically.
+Users can still run any of these themselves in Terminal (subject to the shell policy on vibe-coder devices) — this only prevents Claude from doing it automatically. When a deny rule changes here, sync the human-readable lists in `CLAUDE.md` ("When a Command Is Blocked") and `software/shell/README.md`.
+
+**Plugins** — the file also registers the private `tlc-claude-plugins` marketplace (`extraKnownMarketplaces`, with `autoUpdate: true`) and force-enables org-wide plugins via `enabledPlugins`:
+
+- **Force-enabled (everyone):** `innovation` — the cross-surface kickoff flow. Add a plugin here only if most staff should have it; every enabled skill adds its trigger description to every session and can auto-fire on loosely matching requests.
+- **Opt-in (install yourself):** anything else published in the marketplace. Because the marketplace is already known on every device, any user can run `/plugin install <name>@tlc-claude-plugins` — no settings change, auto-updates included. Example: the `higgsfield` plugin (vendored Higgsfield generation skills) — intended for creatives who actually use Higgsfield, not the whole org. On the chat/Cowork side the same skills arrive via the admin-console sync of the repo, where users toggle them in their own settings.
 
 ---
 
