@@ -50,7 +50,7 @@ A JSON settings file deployed to `/Library/Application Support/ClaudeCode/manage
 **What it blocks Claude from doing automatically:**
 - Running `sudo` or privilege escalation
 - `rm -rf` — recursive force deletion
-- `curl ... | bash` or `wget ... | bash` — piping remote scripts directly into execution
+- `curl ... | bash` or `wget ... | bash` (and `| sh` / `| zsh`) — piping remote scripts directly into execution
 - `chmod` / `chown` — changing file permissions or ownership
 - `brew install` — installing software packages
 - `npm install` — installing Node packages (including bare restores)
