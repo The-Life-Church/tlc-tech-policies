@@ -21,6 +21,7 @@ tlc-tech-policies/
 │   ├── homebrew/     ← Homebrew silent installer (IT-dev only — not in the standard chain)
 │   ├── gh/           ← GitHub CLI silent installer (official pkg, pinned version + SHA)
 │   ├── node/         ← Node.js LTS silent installer (official pkg, pinned version + SHA)
+│   ├── higgsfield/   ← Higgsfield CLI silent installer (release tarball, pinned version + per-arch SHAs)
 │   ├── security/     ← Ad-hoc read-only threat scans (Shai-Hulud npm worm scanner)
 │   └── chrome/       ← Chrome managed prefs: force-install Google PWAs (Mosyle Per-App Config)
 └── hardware/
@@ -58,6 +59,7 @@ Skills live in the private companion repo because the Claude.ai admin console on
 | [`software/xcode`](./software/xcode/README.md) | Headless CLT installer with `git --version` health check (self-heals after macOS upgrades) | Anyone needing git, incl. Claude Code desktop app users |
 | [`software/gh`](./software/gh/README.md) | GitHub CLI from official pkg — pinned version + SHA | Vibe coders / IT-dev, recurring |
 | [`software/node`](./software/node/README.md) | Node.js LTS from official pkg — pinned version + SHA. **Not fleet-wide** (desktop app doesn't need Node) | IT-dev / vibe coders, recurring; pair with Shai-Hulud scan |
+| [`software/higgsfield`](./software/higgsfield/README.md) | Higgsfield CLI from release tarball — pinned version + per-arch SHAs (unsigned binary). **Opt-in only**; pairs with the `higgsfield` plugin in `tlc-claude-plugins` | Creative team / IT-dev opt-in |
 | [`software/homebrew`](./software/homebrew/README.md) | Homebrew installer — **IT-dev only**, not in the standard chain | IT-dev |
 | [`software/security`](./software/security/README.md) | Ad-hoc read-only threat scans (Shai-Hulud npm worm scanner) | Node-bearing machines |
 | [`software/chrome`](./software/chrome/README.md) | Force-install Google PWAs via Chrome Enterprise Core | Top-level org |

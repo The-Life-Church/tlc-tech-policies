@@ -164,6 +164,8 @@ jobs:
   # version_var is replaced in `file`; if sha_var is set, the SHA-256 is pulled
   # from checksums_asset ({V} = bare version) and replaced too. Tools without a
   # pinned SHA (signed pkgs verified by Gatekeeper/installer) leave sha_var "".
+  # Multi-arch tools pinning a second SHA set sha_var2 + asset2 (same
+  # checksums_asset); single-artifact tools leave them "".
   github-release:
     runs-on: ubuntu-latest
     strategy:
@@ -178,6 +180,8 @@ jobs:
             sha_var: GH_SHA256
             checksums_asset: gh_{V}_checksums.txt
             asset: gh_{V}_macOS_universal.pkg
+            sha_var2: ''
+            asset2: ''
             note: 'Reminder: this pkg ships **unsigned** — the pinned SHA is the only integrity check.'
           - name: dockutil
             slug: dockutil
@@ -187,7 +191,20 @@ jobs:
             sha_var: ''
             checksums_asset: ''
             asset: ''
+            sha_var2: ''
+            asset2: ''
             note: 'Signed Developer ID pkg (no SHA pinned in the script — installer verifies the signature).'
+          - name: Higgsfield CLI
+            slug: higgsfield
+            repo: higgsfield-ai/cli
+            file: software/higgsfield/install.sh
+            version_var: HIGGSFIELD_VERSION
+            sha_var: HIGGSFIELD_SHA256_ARM64
+            checksums_asset: checksums.txt
+            asset: hf_{V}_darwin_arm64.tar.gz
+            sha_var2: HIGGSFIELD_SHA256_AMD64
+            asset2: hf_{V}_darwin_amd64.tar.gz
+            note: 'Unsigned binary tarballs — the pinned per-arch SHAs are the only integrity check.'
     steps:
       - uses: actions/checkout@v4
 
@@ -208,6 +225,8 @@ jobs:
           SHA_VAR: ${{ matrix.sha_var }}
           CHECKSUMS_ASSET: ${{ matrix.checksums_asset }}
           ASSET: ${{ matrix.asset }}
+          SHA_VAR2: ${{ matrix.sha_var2 }}
+          ASSET2: ${{ matrix.asset2 }}
           NOTE: ${{ matrix.note }}
         run: |
           set -euo pipefail
@@ -239,19 +258,37 @@ jobs:
           SHA_LINE=""
           if [ -n "$SHA_VAR" ]; then
             CHECKSUMS_FILE="${CHECKSUMS_ASSET//\{V\}/$LATEST}"
+            CHECKSUMS_URL="https://github.com/${REPO}/releases/download/${TAG}/${CHECKSUMS_FILE}"
+            CHECKSUMS=$(curl -fsSL "$CHECKSUMS_URL")
             ASSET_FILE="${ASSET//\{V\}/$LATEST}"
-            SHA=$(curl -fsSL "https://github.com/${REPO}/releases/download/${TAG}/${CHECKSUMS_FILE}" | awk -v pkg="$ASSET_FILE" '$2 == pkg {print $1}')
+            SHA=$(echo "$CHECKSUMS" | awk -v pkg="$ASSET_FILE" '$2 == pkg {print $1}')
             if [ -z "$SHA" ]; then
               echo "ERROR: could not find SHA for ${ASSET_FILE} in ${CHECKSUMS_FILE}"
               exit 1
             fi
-            SHA_LINE="- **SHA-256:** \`${SHA}\` (from [${CHECKSUMS_FILE}](https://github.com/${REPO}/releases/download/${TAG}/${CHECKSUMS_FILE}))"
+            SHA_LINE="- **SHA-256:** \`${SHA}\` (\`${ASSET_FILE}\`, from [${CHECKSUMS_FILE}](${CHECKSUMS_URL}))"
+          fi
+
+          # Optional second artifact (multi-arch tools pinning per-arch SHAs)
+          SHA2=""
+          if [ -n "$SHA_VAR2" ]; then
+            ASSET_FILE2="${ASSET2//\{V\}/$LATEST}"
+            SHA2=$(echo "$CHECKSUMS" | awk -v pkg="$ASSET_FILE2" '$2 == pkg {print $1}')
+            if [ -z "$SHA2" ]; then
+              echo "ERROR: could not find SHA for ${ASSET_FILE2} in ${CHECKSUMS_FILE}"
+              exit 1
+            fi
+            SHA_LINE="${SHA_LINE}
+          - **SHA-256 (2):** \`${SHA2}\` (\`${ASSET_FILE2}\`)"
           fi
 
           git checkout -b "$BRANCH"
           sed -i "s|^${VERSION_VAR}=\".*\"|${VERSION_VAR}=\"${LATEST}\"|" "$FILE"
           if [ -n "$SHA_VAR" ]; then
             sed -i "s|^${SHA_VAR}=\".*\"|${SHA_VAR}=\"${SHA}\"|" "$FILE"
+          fi
+          if [ -n "$SHA_VAR2" ]; then
+            sed -i "s|^${SHA_VAR2}=\".*\"|${SHA_VAR2}=\"${SHA2}\"|" "$FILE"
           fi
           git add "$FILE"
           git commit -m "Bump ${NAME} pin: ${CURRENT} -> ${LATEST}"
