@@ -40,9 +40,12 @@ tlc-tech-policies/
 │   ├── gh/                                   ← Silent GitHub CLI installer (requires Homebrew)
 │   │   ├── install.sh
 │   │   └── README.md
-│   └── chrome/                               ← Chrome managed prefs (force-install Google PWAs)
-│       ├── managed-preferences.plist        ← Mosyle Chrome Per-App Config (PLIST)
-│       └── README.md
+│   ├── chrome/                               ← Chrome managed prefs (force-install Google PWAs)
+│   │   ├── managed-preferences.plist        ← Mosyle Chrome Per-App Config (PLIST)
+│   │   └── README.md
+│   └── security/                             ← Ad-hoc read-only threat scans
+│       ├── scan-shai-hulud.sh               ← Mini Shai-Hulud npm worm scanner (exit 0/2/3)
+│       └── README.md                        ← What it checks, Mosyle run, gh-side checks
 └── hardware/                                 ← Mac hardware + device-level policy
     └── dock/                                 ← Dock seeding (curl|bash bootstrap; replaces tlc-dock-seed .pkg)
         ├── install-staff-dock.sh            ← Mosyle bootstrap: install dockutil + scripts, load daemon
