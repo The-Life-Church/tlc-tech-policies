@@ -5,12 +5,13 @@
 # ── Adding a new pinned installer ─────────────────────────────────────────────
 # If the tool ships via GitHub releases: add an entry to the `github-release`
 # job's matrix below — name, slug, repo, file, version_var, and (if the script
-# pins a checksum) sha_var + checksums_asset + asset. That's it.
+# pins a checksum) sha_var + checksums_asset + asset. Multi-arch tools pinning
+# two SHAs also set sha_var2 + asset2 (same checksums file). That's it.
 # If it ships from somewhere else (like Node's dist index), add a dedicated job
 # modeled on the `node` job.
 # Tools with no pin (e.g. Homebrew — always-latest installer, self-updating)
 # have nothing to bump and don't belong here.
-# Convention note also lives in STRUCTURE.md ("How tool installers stay current").
+# Convention also documented in the repo-root CLAUDE.md ("Adding a managed tool installer").
 #
 # Supply-chain posture:
 #   - COOLDOWN_DAYS (default 14): a release younger than this is skipped —
