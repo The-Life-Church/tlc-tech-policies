@@ -56,8 +56,8 @@ Mosyle → **Custom Scripts → Add Script**
 
 **Node Install**
 - Run as: `root`
-- Schedule: Once or recurring (idempotent — recurring picks up version bumps merged to `main`)
-- Scope: IT-dev / vibe coders (see Scope above — not fleet-wide)
+- Schedule: **Recurring, weekly — required.** Recurring runs are the entire update path: merged pin bumps from `bump-pins.yml` only reach a device when this script re-runs. A one-time install freezes that machine at install-day Node forever. Weekly runs are effectively free — current devices exit 0 in ~1 second, no download.
+- Scope: **Just the users who need it.** Not fleet-wide, and not even necessarily a whole device group — if only one or two people run node tooling or `npx`, scope to exactly those machines and let the recurring schedule handle the rest. No reason to put Node (and its npm supply-chain surface) on 150 Macs for two users. Widen the scope when someone new needs it; the script doesn't change.
 
 **Paste into Mosyle's Custom Script box** (the shebang is required — Mosyle writes the body to a file and executes it):
 ```bash

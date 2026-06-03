@@ -18,7 +18,7 @@ The one people forget is #3.
 
 1. `software/<tool>/install.sh` — copy the shape of `software/gh/install.sh`: pinned `VERSION` (+ `SHA256` if the artifact is unsigned), idempotent version check, download → verify checksum → `installer -pkg -target /`, log + exit codes, `trap` cleanup.
 2. `software/<tool>/README.md` — what it does, Mosyle deploy block, scope, exit codes.
-3. **`.github/workflows/bump-pins.yml`** — GitHub-release tool: add a matrix entry to the `github-release` job (~6 lines). Other source: add a dedicated job modeled on the `node` job. Skipping this means the pin never gets bump PRs and the tool silently goes stale on the fleet.
+3. **`.github/workflows/bump-pins.yml`** — GitHub-release tool: add a matrix entry to the `github-release` job (~6 lines; multi-arch tools pinning two SHAs set `sha_var2` + `asset2`, see the higgsfield entry). Other source: add a dedicated job modeled on the `node` job. Skipping this means the pin never gets bump PRs and the tool silently goes stale on the fleet.
 4. Mosyle — new Custom Script entry, scoped to the right group, **recurring** (recurring runs are how merged pin bumps reach devices).
 
 Exceptions: tools with no version pin need no workflow entry (CLT installs via `softwareupdate`; Homebrew is always-latest). If the bespoke-installer count grows past ~6, adopt [Installomator](https://github.com/Installomator/Installomator) instead of adding more.
