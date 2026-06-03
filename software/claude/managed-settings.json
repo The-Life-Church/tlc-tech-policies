@@ -57,7 +57,6 @@
     }
   },
   "enabledPlugins": {
-    "innovation@tlc-claude-plugins": true,
-    "higgsfield@tlc-claude-plugins": true
+    "innovation@tlc-claude-plugins": true
   }
 }
