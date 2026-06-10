@@ -25,7 +25,18 @@ The `day:` and `week:` percentages are the headline feature — you can see a ra
 
 ## Installation
 
-**Prerequisite:** Node.js (`node --version` to check). If Terminal says node isn't found, ask IT.
+**Prerequisite:** Node.js (`node --version` to check). The status line *is* a node script, so Node must be on the machine — deploy `software/node/install.sh` first. If Terminal says node isn't found, ask IT.
+
+### Fleet install (Mosyle) — the easy path
+
+`install.sh` in this folder does both manual steps below, per-user, on a recurring schedule: it drops to the logged-in console user, places `statusline.js` in their `~/.claude/`, and **merges** the `statusLine` key into their `~/.claude/settings.json` without touching their other settings (it refuses rather than clobber a settings.json it can't parse). Scope it to the same machines that get the Node installer.
+
+```bash
+#!/bin/bash
+curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/claude/statusline/install.sh" | bash
+```
+
+The manual steps below are the same thing by hand, if you'd rather.
 
 ### Step 1: Copy the script
 

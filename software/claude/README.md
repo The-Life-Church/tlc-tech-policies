@@ -75,6 +75,13 @@ Users can still run any of these themselves in Terminal (subject to the shell po
 - `deploy-managed-settings.sh` — Mosyle script that pulls the latest `managed-settings.json` from GitHub and places it at `/Library/Application Support/ClaudeCode/managed-settings.json`. Runs daily as root.
 - `remove-claude-policy.sh` — Removes the managed policy file and cleans up the import block from the user's `~/.claude/CLAUDE.md`. Run manually as root to offboard a device.
 
+### Installing Claude Code itself (the binary)
+
+- `install-claude-code.sh` — Mosyle script that installs the Claude Code CLI for the logged-in console user via the official native installer. **Per-user, not root-global, and not version-pinned** — the native install lands in the user's `~/.local/bin/claude` and **self-updates in the background**, so this only bootstraps it (a recurring schedule just heals machines where it's missing; it skips when already present). Run as root; the script drops to the console user. Not in `bump-pins.yml` — there's no pin to bump. If you ever need version bounds fleet-wide, use `minimumVersion` / `requiredMaximumVersion` in `managed-settings.json`, not a pin here.
+- `statusline/install.sh` — Mosyle script that installs the [custom status line](./statusline/) for the console user: places `statusline.js` in their `~/.claude/` and merges the `statusLine` key into their `~/.claude/settings.json` (preserving other keys; refuses rather than clobber an unparseable file). **Requires Node** (the status line runs `node`), so scope it to the same machines as `software/node/`.
+
+**Dependency order for a full Claude Code dev setup:** `software/node/` (Node) → `install-claude-code.sh` (the CLI) → `statusline/install.sh` (the status line). All three are per-user and idempotent; the policy/managed-settings scripts above are separate and machine-level.
+
 ---
 
 ## Deployment
