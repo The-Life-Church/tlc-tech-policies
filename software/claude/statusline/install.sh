@@ -48,6 +48,12 @@ timeout() {
 }
 
 WORK_DIR=$(mktemp -d /tmp/tlc-statusline.XXXXXX)
+# `mktemp -d` makes the dir mode 0700 owned by root. We later drop to the
+# console user to run the merge script that lives in here — a 0700 root dir
+# isn't traversable by them, so node would fail MODULE_NOT_FOUND. Open the
+# dir so the dropped user can read its (non-sensitive) contents. No secrets
+# live here — only the fetched statusline.js and the merge script.
+chmod 0755 "$WORK_DIR"
 cleanup() { rm -rf "$WORK_DIR"; }
 trap cleanup EXIT INT TERM
 
