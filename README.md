@@ -15,7 +15,7 @@ tlc-tech-policies/
 ├── .github/workflows/
 │   └── bump-pins.yml ← Watches upstream releases, opens PRs bumping installer version pins
 ├── software/
-│   ├── claude/       ← Claude Code policy, Claude.ai org-preferences block, managed settings
+│   ├── claude/       ← Claude Code policy, managed settings, org prefs, + per-user installers (Claude Code CLI, status line)
 │   ├── shell/        ← Terminal shell restrictions deployed via Mosyle
 │   ├── xcode/        ← Xcode Command Line Tools silent installer
 │   ├── homebrew/     ← Homebrew silent installer (IT-dev only — not in the standard chain)
