@@ -65,9 +65,9 @@ Mosyle → **Custom Scripts → Add Script**
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/node/install.sh" | bash
 ```
 
-**To test on your own Mac** — open Terminal and paste just the `curl` line (no shebang — zsh will try to run `#!/bin/bash` as a command and error out):
+**To test on your own Mac** — open Terminal and paste the `curl` line with `sudo bash` (the pkg install needs root, which Mosyle has automatically; no shebang — zsh would try to run `#!/bin/bash` as a command):
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/node/install.sh" | bash
+curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/node/install.sh" | sudo bash
 ```
 
 **No prerequisites.** Node doesn't need CLT or a logged-in user.

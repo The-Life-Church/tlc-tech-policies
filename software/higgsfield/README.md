@@ -59,9 +59,9 @@ Mosyle → **Custom Scripts → Add Script**
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/higgsfield/install.sh" | bash
 ```
 
-**To test on your own Mac** — open Terminal and paste just the `curl` line (no shebang — zsh will try to run `#!/bin/bash` as a command and error out):
+**To test on your own Mac** — open Terminal and paste the `curl` line with `sudo bash` (the install writes to `/usr/local/bin`, which needs root; Mosyle has it automatically; no shebang — zsh would try to run `#!/bin/bash` as a command):
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/higgsfield/install.sh" | bash
+curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/higgsfield/install.sh" | sudo bash
 ```
 
 **Verify:**
