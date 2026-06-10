@@ -23,7 +23,7 @@ set -euo pipefail
 RAW_BASE="https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/hardware/dock"
 
 # Pinned dockutil release (signed Developer ID pkg, installs /usr/local/bin/dockutil).
-DOCKUTIL_VERSION="3.1.2"
+DOCKUTIL_VERSION="3.1.3"
 DOCKUTIL_PKG_URL="https://github.com/kcrawford/dockutil/releases/download/${DOCKUTIL_VERSION}/dockutil-${DOCKUTIL_VERSION}.pkg"
 
 LIB_DIR="/usr/local/lib/tlc/dock"
