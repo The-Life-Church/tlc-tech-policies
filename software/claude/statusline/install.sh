@@ -65,10 +65,17 @@ if [ -z "$USER_HOME" ] || [ ! -d "$USER_HOME" ]; then
 fi
 
 # --- Guard: Node is required (the status line is a node script) ---
-if ! sudo -u "$CONSOLE_USER" -H bash -lc 'command -v node >/dev/null 2>&1'; then
+# Resolve node via a LOGIN shell so the user's full PATH (Homebrew, nvm, the
+# managed /usr/local/bin pkg) is in scope, then keep the absolute path. We must
+# call node by absolute path later: `sudo -u user node ...` runs with sudo's
+# stripped secure_path, which won't contain /opt/homebrew/bin etc., so a bare
+# `node` under sudo fails "node: command not found" even when node is installed.
+NODE_BIN=$(sudo -u "$CONSOLE_USER" -H bash -lc 'command -v node' 2>/dev/null || true)
+if [ -z "$NODE_BIN" ]; then
     log "ERROR: Node.js not found for ${CONSOLE_USER}. The status line runs 'node ~/.claude/statusline.js'. Deploy software/node/install.sh to this machine first."
     exit 1
 fi
+log "Using node at ${NODE_BIN} (for ${CONSOLE_USER})."
 
 CLAUDE_DIR="${USER_HOME}/.claude"
 SETTINGS="${CLAUDE_DIR}/settings.json"
@@ -107,8 +114,18 @@ fs.writeFileSync(p, JSON.stringify(s, null, 2) + "\n");
 NODE
 
 install -m 0644 -o "$CONSOLE_USER" "$MERGE_JS" "${WORK_DIR}/merge-user.js"
-if ! sudo -u "$CONSOLE_USER" -H node "${WORK_DIR}/merge-user.js" "$SETTINGS" 2>&1 | tee -a "$LOG_FILE"; then
-    log "ERROR: Failed to merge statusLine into ${SETTINGS} (existing file may be malformed). Left it untouched."
+# Call node by absolute path (see NODE_BIN note above). Distinguish exit 2
+# (existing settings.json won't parse — deliberately refused) from any other
+# failure (node couldn't run, write failed, etc.) so the log isn't misleading.
+set +e
+sudo -u "$CONSOLE_USER" -H "$NODE_BIN" "${WORK_DIR}/merge-user.js" "$SETTINGS" 2>&1 | tee -a "$LOG_FILE"
+merge_rc=${PIPESTATUS[0]}
+set -e
+if [ "$merge_rc" -eq 2 ]; then
+    log "ERROR: ${SETTINGS} exists but is not valid JSON — refused to overwrite. Fix or remove it, then re-run."
+    exit 1
+elif [ "$merge_rc" -ne 0 ]; then
+    log "ERROR: merge step failed (rc=${merge_rc}) running ${NODE_BIN}. ${SETTINGS} left untouched."
     exit 1
 fi
 
