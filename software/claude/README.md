@@ -62,8 +62,6 @@ A JSON settings file deployed to `/Library/Application Support/ClaudeCode/manage
 
 Users can still run any of these themselves in Terminal (subject to the shell policy on vibe-coder devices) — this only prevents Claude from doing it automatically. When a deny rule changes here, sync the human-readable lists in `CLAUDE.md` ("When a Command Is Blocked") and `software/shell/README.md`.
 
-**Version floor (`minimumVersion`)** — Claude Code installs per-user and self-updates (see `install-claude-code.sh` below), so the fleet rides latest by default. `minimumVersion` is a *soft floor*: auto-update won't leave a machine below it, but Claude still starts on anything at-or-above — so it can't lock anyone out. Bump it occasionally to retire ancient builds. Two stronger keys exist but we deliberately **don't** use them: `requiredMinimumVersion` / `requiredMaximumVersion` make Claude Code *refuse to start* outside a range — set the ceiling too low and a fast-updating Mac is bricked fleet-wide. Use the soft floor unless there's a specific reason to hard-gate.
-
 **Plugins** — the file also registers the private `tlc-claude-plugins` marketplace (`extraKnownMarketplaces`, with `autoUpdate: true`) and force-enables org-wide plugins via `enabledPlugins`:
 
 - **Force-enabled (everyone):** `innovation` — the cross-surface kickoff flow. Add a plugin here only if most staff should have it; every enabled skill adds its trigger description to every session and can auto-fire on loosely matching requests.
