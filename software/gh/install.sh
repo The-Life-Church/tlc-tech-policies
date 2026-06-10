@@ -25,7 +25,7 @@ set -euo pipefail
 # --- Pinned release ----------------------------------------------------------
 # Update both lines together. SHA comes from gh_<ver>_checksums.txt on the
 # release page: https://github.com/cli/cli/releases
-GH_VERSION="2.93.0"
+GH_VERSION="2.90.0"
 GH_SHA256="29c391a42a6c2312df12412e6c1e27ffbdb51ad44c6a3d55cd7bec38bff7335a"
 # ------------------------------------------------------------------------------
 
