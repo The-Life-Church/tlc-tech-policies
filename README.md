@@ -54,7 +54,7 @@ Skills live in the private companion repo because the Claude.ai admin console on
 
 | Area | What it is | Scope |
 |---|---|---|
-| [`software/claude`](./software/claude/README.md) | Claude Code fleet policy (`CLAUDE.md`), deny list (`managed-settings.json`), Claude.ai org prefs (`ADMIN.md`) | All managed Macs + admin console |
+| [`software/claude`](./software/claude/README.md) | Claude Code fleet policy (`CLAUDE.md`), deny list (`managed-settings.json`), Claude.ai org prefs (`ADMIN.md`), per-user installers (Claude Code CLI, status line) | All managed Macs + admin console |
 | [`software/shell`](./software/shell/README.md) | Terminal restrictions via `/etc/zshrc` — full block (general staff) or selective block of installs/package runners (vibe coders) | Per device group |
 | [`software/xcode`](./software/xcode/README.md) | Headless CLT installer with `git --version` health check (self-heals after macOS upgrades) | Anyone needing git, incl. Claude Code desktop app users |
 | [`software/gh`](./software/gh/README.md) | GitHub CLI from official pkg — pinned version + SHA | Vibe coders / IT-dev, recurring |
