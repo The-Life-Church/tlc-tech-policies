@@ -115,6 +115,36 @@ settles, confirm `ls ~/Applications/Chrome Apps.localized/` shows all 8 before t
 dock seed. `hardware/dock/report-status.sh` surfaces any PWAs left unresolved after the
 retry cap.
 
+## Troubleshooting: blank icon / URL-named PWA shim
+
+**Symptom:** in Launchpad or the `Chrome Apps.localized` folder, some Google apps show a
+**blank icon and a name like `https/mail.google.com`** instead of "Gmail" with its real icon.
+
+**Cause:** Chrome doesn't actually build the macOS `.app` shim (download the icon, write the
+real `CFBundleName`, sign it) until the app is **launched at least once**. Force-install
+registers the app and downloads icons into the profile, but the on-disk bundle stays a stub
+until first launch. So the blank ones are simply the apps **nobody has opened yet** — and on a
+machine with several Chrome profiles, every profile gets the machine-scoped force-install, so
+there can be a lot of never-opened stubs.
+
+**Fix (do this on the affected Mac):**
+
+1. Open the app once — Launchpad, the Dock, or `chrome://apps`. On a multi-profile machine the
+   **profile picker** appears first; **pick a profile and let the app fully load**. That launch
+   is what bakes the shim.
+2. `killall Dock` if the icon doesn't refresh on its own.
+
+**This is cosmetic and does not affect the managed Dock** — the dock seeder's `pwa_ready()`
+check (`hardware/dock/setup-dock.sh`) already refuses to dock any shim whose name starts with
+`http` or has no icon, so placeholders never get pinned. They only show in Launchpad / the
+Chrome Apps folder, and self-heal the moment the app is opened.
+
+**Confirming the diagnosis from `chrome://web-app-internals`** (export the JSON, or read it live):
+a baked shim has a **`cdhash_hmac`** in `AppShimRegistryLocalStorage` and a profile listed under
+**`last_active_profiles`**; a placeholder has neither. The `InstalledWebApps` record will look
+healthy regardless (correct `name`, downloaded icons) — the break is only between Chrome's
+recorded state and the on-disk bundle, which is why launching, not reinstalling, is the fix.
+
 ## Opening links in the app (per-user, not enforceable)
 
 `default_launch_container: window` makes each PWA open in its own window **when launched**
