@@ -25,3 +25,11 @@ Thumbs.db
 # =============================================================
 CLAUDE.local.md
 TODO.md
+
+# =============================================================
+# MOSYLE API — local integration, NEVER commit
+# Hits the Mosyle Business API with real org credentials.
+# This repo is public and deploys from main, so this dir
+# stays local-only. Config lives in the root .env (also ignored).
+# =============================================================
+/mosyle/
