@@ -7,8 +7,14 @@
 # job's matrix below — name, slug, repo, file, version_var, and (if the script
 # pins a checksum) sha_var + checksums_asset + asset. Multi-arch tools pinning
 # two SHAs also set sha_var2 + asset2 (same checksums file). That's it.
-# If it ships from somewhere else (like Node's dist index), add a dedicated job
-# modeled on the `node` job.
+# If it ships from somewhere else, add a dedicated job modeled on the `node`
+# job. Examples already present:
+#   - Node's dist index — the `node` job
+#   - npm registry — `npm view <pkg> version` + `time` for the cooldown date
+#     (the `hyperframes` job; version pin only, no SHA)
+#   - a GitHub release that publishes NO checksums file — download each asset
+#     and hash it in-CI, because the matrix can only awk a published checksums
+#     file (the `ffmpeg` job)
 # Tools with no pin (e.g. Homebrew — always-latest installer, self-updating)
 # have nothing to bump and don't belong here.
 # Convention also documented in the repo-root CLAUDE.md ("Adding a managed tool installer").
@@ -349,4 +355,237 @@ jobs:
           TEXT=$(printf '%s\n%s' \
             "<${RUN_URL}|Bump installer pins> · <${GH_REPO_URL}|${GH_REPO}>" \
             "❌ ${NAME} job failed — <${RUN_URL}|run logs>")
+          jq -n --arg text "$TEXT" '{text: $text}' | curl -fsS -X POST -H 'Content-Type: application/json' -d @- "$WEBHOOK"
+
+  # ── HyperFrames: npm package `hyperframes`. Source of truth is the npm
+  # registry — version pin only (no SHA; npm integrity is version + registry).
+  hyperframes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Check hyperframes (npm)
+        id: bump
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          FILE="software/hyperframes/install.sh"
+
+          CURRENT=$(grep -m1 '^HYPERFRAMES_VERSION=' "$FILE" | cut -d'"' -f2)
+
+          LATEST=$(npm view hyperframes version)
+          if [ -z "$LATEST" ]; then
+            echo "ERROR: could not read latest hyperframes version from npm."
+            exit 1
+          fi
+
+          if [ "$LATEST" = "$CURRENT" ]; then
+            echo "hyperframes pin is current ($CURRENT). Nothing to do."
+            exit 0
+          fi
+
+          REL_DATE=$(npm view hyperframes time --json | jq -r --arg v "$LATEST" '.[$v]')
+          if [ -z "$REL_DATE" ] || [ "$REL_DATE" = "null" ]; then
+            echo "ERROR: could not read publish time for hyperframes@${LATEST}."
+            exit 1
+          fi
+
+          AGE_DAYS=$(( ( $(date +%s) - $(date -d "$REL_DATE" +%s) ) / 86400 ))
+          if [ "$IGNORE_COOLDOWN" != "true" ] && [ "$AGE_DAYS" -lt "$COOLDOWN_DAYS" ]; then
+            echo "hyperframes $LATEST is only ${AGE_DAYS}d old (< ${COOLDOWN_DAYS}d cooldown). Skipping until it ages."
+            exit 0
+          fi
+
+          BRANCH="chore/bump-hyperframes-${LATEST}"
+          if git ls-remote --exit-code origin "refs/heads/${BRANCH}" >/dev/null 2>&1; then
+            echo "Branch ${BRANCH} already exists — PR presumably open. Skipping."
+            exit 0
+          fi
+
+          git checkout -b "$BRANCH"
+          sed -i "s|^HYPERFRAMES_VERSION=\".*\"|HYPERFRAMES_VERSION=\"${LATEST}\"|" "$FILE"
+          git add "$FILE"
+          git commit -m "Bump HyperFrames pin: ${CURRENT} -> ${LATEST}"
+          git push origin "$BRANCH"
+
+          PR_URL=$(gh pr create \
+            --title "Bump HyperFrames pin: ${CURRENT} -> ${LATEST}" \
+            --body "$(cat <<EOF
+          Automated pin bump from the \`bump-pins\` workflow.
+
+          - **Version:** \`${CURRENT}\` -> \`${LATEST}\` (npm package \`hyperframes\`)
+          - **Published:** ${REL_DATE} (${AGE_DAYS} days old; cooldown ${COOLDOWN_DAYS}d, ignore_cooldown=${IGNORE_COOLDOWN})
+          - **npm:** https://www.npmjs.com/package/hyperframes/v/${LATEST}
+          - **Releases:** https://github.com/heygen-com/hyperframes/releases
+
+          Note: only the CLI *version* is cooldown-pinned. The on-device skills the CLI fetches are live-latest (upstream force-refreshes them at runtime) and are not controlled by this bump.
+          Review checklist: release notes look sane, version is a real published release on npm.
+          On merge, devices converge on their next recurring Mosyle run.
+          EOF
+          )")
+
+          {
+            echo "pr_url=${PR_URL}"
+            echo "old=${CURRENT}"
+            echo "new=${LATEST}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Notify Google Chat (bump PR opened)
+        if: ${{ steps.bump.outputs.pr_url != '' }}
+        env:
+          WEBHOOK: ${{ secrets.CHAT_WEBHOOK_URL }}
+          PR_URL: ${{ steps.bump.outputs.pr_url }}
+          OLD: ${{ steps.bump.outputs.old }}
+          NEW: ${{ steps.bump.outputs.new }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REPO: ${{ github.repository }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "CHAT_WEBHOOK_URL secret not set — skipping notify."; exit 0; fi
+          TEXT=$(printf '%s\n%s' \
+            "<${RUN_URL}|Bump installer pins> · <${REPO_URL}|${REPO}>" \
+            "✅ HyperFrames: ${OLD} -> ${NEW} — <${PR_URL}|review the PR>")
+          jq -n --arg text "$TEXT" '{text: $text}' | curl -fsS -X POST -H 'Content-Type: application/json' -d @- "$WEBHOOK"
+
+      - name: Notify Google Chat (job failed)
+        if: ${{ failure() }}
+        env:
+          WEBHOOK: ${{ secrets.CHAT_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REPO: ${{ github.repository }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "CHAT_WEBHOOK_URL secret not set — skipping notify."; exit 0; fi
+          TEXT=$(printf '%s\n%s' \
+            "<${RUN_URL}|Bump installer pins> · <${REPO_URL}|${REPO}>" \
+            "❌ HyperFrames job failed — <${RUN_URL}|run logs>")
+          jq -n --arg text "$TEXT" '{text: $text}' | curl -fsS -X POST -H 'Content-Type: application/json' -d @- "$WEBHOOK"
+
+  # ── FFmpeg: static macOS binaries from eugeneware/ffmpeg-static's GitHub
+  # releases. Dedicated (not a github-release matrix row) because upstream ships
+  # NO checksums file — this job downloads all four darwin assets (ffmpeg +
+  # ffprobe, per arch) and hashes them in-CI (~200 MB pull; fine on GH runners).
+  # Release tag is b<version> (leading `b`); the script pins the bare version.
+  ffmpeg:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Check FFmpeg (eugeneware/ffmpeg-static)
+        id: bump
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          FILE="software/ffmpeg/install.sh"
+          REPO="eugeneware/ffmpeg-static"
+
+          CURRENT=$(grep -m1 '^FFMPEG_VERSION=' "$FILE" | cut -d'"' -f2)
+
+          RELEASE=$(gh api "repos/${REPO}/releases/latest")
+          TAG=$(echo "$RELEASE" | jq -r '.tag_name')
+          LATEST="${TAG#b}" # tag is b<version>; strip the leading b
+          PUBLISHED=$(echo "$RELEASE" | jq -r '.published_at')
+
+          if [ "$LATEST" = "$CURRENT" ]; then
+            echo "FFmpeg pin is current (${CURRENT}). Nothing to do."
+            exit 0
+          fi
+
+          AGE_DAYS=$(( ( $(date +%s) - $(date -d "$PUBLISHED" +%s) ) / 86400 ))
+          if [ "$IGNORE_COOLDOWN" != "true" ] && [ "$AGE_DAYS" -lt "$COOLDOWN_DAYS" ]; then
+            echo "FFmpeg ${LATEST} is only ${AGE_DAYS}d old (< ${COOLDOWN_DAYS}d cooldown). Skipping until it ages."
+            exit 0
+          fi
+
+          BRANCH="chore/bump-ffmpeg-${LATEST}"
+          if git ls-remote --exit-code origin "refs/heads/${BRANCH}" >/dev/null 2>&1; then
+            echo "Branch ${BRANCH} already exists — PR presumably open. Skipping."
+            exit 0
+          fi
+
+          # Upstream publishes no checksums file — download each darwin asset
+          # (ffmpeg + ffprobe, per arch) and hash it. ~200 MB pulled in-CI.
+          BASE="https://github.com/${REPO}/releases/download/${TAG}"
+          FFMPEG_ARM64=$(curl -fsSL "${BASE}/ffmpeg-darwin-arm64"   | sha256sum | awk '{print $1}')
+          FFMPEG_AMD64=$(curl -fsSL "${BASE}/ffmpeg-darwin-x64"     | sha256sum | awk '{print $1}')
+          FFPROBE_ARM64=$(curl -fsSL "${BASE}/ffprobe-darwin-arm64" | sha256sum | awk '{print $1}')
+          FFPROBE_AMD64=$(curl -fsSL "${BASE}/ffprobe-darwin-x64"   | sha256sum | awk '{print $1}')
+          for v in "$FFMPEG_ARM64" "$FFMPEG_AMD64" "$FFPROBE_ARM64" "$FFPROBE_AMD64"; do
+            if [ -z "$v" ]; then echo "ERROR: failed to compute one of the four SHAs."; exit 1; fi
+          done
+
+          git checkout -b "$BRANCH"
+          sed -i "s|^FFMPEG_VERSION=\".*\"|FFMPEG_VERSION=\"${LATEST}\"|" "$FILE"
+          sed -i "s|^FFMPEG_SHA256_ARM64=\".*\"|FFMPEG_SHA256_ARM64=\"${FFMPEG_ARM64}\"|" "$FILE"
+          sed -i "s|^FFMPEG_SHA256_AMD64=\".*\"|FFMPEG_SHA256_AMD64=\"${FFMPEG_AMD64}\"|" "$FILE"
+          sed -i "s|^FFPROBE_SHA256_ARM64=\".*\"|FFPROBE_SHA256_ARM64=\"${FFPROBE_ARM64}\"|" "$FILE"
+          sed -i "s|^FFPROBE_SHA256_AMD64=\".*\"|FFPROBE_SHA256_AMD64=\"${FFPROBE_AMD64}\"|" "$FILE"
+          git add "$FILE"
+          git commit -m "Bump FFmpeg pin: ${CURRENT} -> ${LATEST}"
+          git push origin "$BRANCH"
+
+          PR_URL=$(gh pr create \
+            --title "Bump FFmpeg pin: ${CURRENT} -> ${LATEST}" \
+            --body "$(cat <<EOF
+          Automated pin bump from the \`bump-pins\` workflow.
+
+          - **Version:** \`${CURRENT}\` -> \`${LATEST}\` (release tag \`${TAG}\`)
+          - **Published:** ${PUBLISHED} (${AGE_DAYS} days old; cooldown ${COOLDOWN_DAYS}d, ignore_cooldown=${IGNORE_COOLDOWN})
+          - **ffmpeg SHA-256:** arm64 \`${FFMPEG_ARM64}\`, x64 \`${FFMPEG_AMD64}\`
+          - **ffprobe SHA-256:** arm64 \`${FFPROBE_ARM64}\`, x64 \`${FFPROBE_AMD64}\`
+          - **Release:** https://github.com/${REPO}/releases/tag/${TAG}
+
+          Unsigned community static build — the pinned SHAs are the only integrity check (same posture as higgsfield). Upstream publishes no checksums file, so these were computed by downloading each asset in this CI run.
+          Review checklist: release is real on ${REPO}; both SHAs come from the assets downloaded in this run.
+          On merge, devices converge on their next recurring Mosyle run.
+          EOF
+          )")
+
+          {
+            echo "pr_url=${PR_URL}"
+            echo "old=${CURRENT}"
+            echo "new=${LATEST}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Notify Google Chat (bump PR opened)
+        if: ${{ steps.bump.outputs.pr_url != '' }}
+        env:
+          WEBHOOK: ${{ secrets.CHAT_WEBHOOK_URL }}
+          PR_URL: ${{ steps.bump.outputs.pr_url }}
+          OLD: ${{ steps.bump.outputs.old }}
+          NEW: ${{ steps.bump.outputs.new }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REPO: ${{ github.repository }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "CHAT_WEBHOOK_URL secret not set — skipping notify."; exit 0; fi
+          TEXT=$(printf '%s\n%s' \
+            "<${RUN_URL}|Bump installer pins> · <${REPO_URL}|${REPO}>" \
+            "✅ FFmpeg: ${OLD} -> ${NEW} — <${PR_URL}|review the PR>")
+          jq -n --arg text "$TEXT" '{text: $text}' | curl -fsS -X POST -H 'Content-Type: application/json' -d @- "$WEBHOOK"
+
+      - name: Notify Google Chat (job failed)
+        if: ${{ failure() }}
+        env:
+          WEBHOOK: ${{ secrets.CHAT_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REPO: ${{ github.repository }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "CHAT_WEBHOOK_URL secret not set — skipping notify."; exit 0; fi
+          TEXT=$(printf '%s\n%s' \
+            "<${RUN_URL}|Bump installer pins> · <${REPO_URL}|${REPO}>" \
+            "❌ FFmpeg job failed — <${RUN_URL}|run logs>")
           jq -n --arg text "$TEXT" '{text: $text}' | curl -fsS -X POST -H 'Content-Type: application/json' -d @- "$WEBHOOK"
