@@ -3,10 +3,13 @@
 # API keys, passwords, and tokens live in .env files.
 # If a key ends up in GitHub, it can be found and misused —
 # even in private repos. This keeps them safe.
+# (.env.example is the one exception — it holds variable names
+# with empty values so teammates know what to fill in.)
 # =============================================================
 .env
 .env.local
 .env.*
+!.env.example
 
 # =============================================================
 # NODE / JAVASCRIPT

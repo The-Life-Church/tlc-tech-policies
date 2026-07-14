@@ -22,6 +22,8 @@ tlc-tech-policies/
 │   ├── gh/           ← GitHub CLI silent installer (official pkg, pinned version + SHA)
 │   ├── node/         ← Node.js LTS silent installer (official pkg, pinned version + SHA)
 │   ├── higgsfield/   ← Higgsfield CLI silent installer (release tarball, pinned version + per-arch SHAs)
+│   ├── hyperframes/  ← HyperFrames CLI silent installer (npm global, pinned; self-bootstraps Node + ffmpeg)
+│   ├── ffmpeg/       ← FFmpeg + ffprobe static binaries (pinned per-arch SHAs; encoder half of HyperFrames)
 │   ├── security/     ← Ad-hoc read-only threat scans (Shai-Hulud npm worm scanner)
 │   └── chrome/       ← Chrome managed prefs: force-install Google PWAs (Mosyle Per-App Config)
 └── hardware/
@@ -60,6 +62,8 @@ Skills live in the private companion repo because the Claude.ai admin console on
 | [`software/gh`](./software/gh/README.md) | GitHub CLI from official pkg — pinned version + SHA | Vibe coders / IT-dev, recurring |
 | [`software/node`](./software/node/README.md) | Node.js LTS from official pkg — pinned version + SHA. **Not fleet-wide** (desktop app doesn't need Node) | IT-dev / vibe coders, recurring; pair with Shai-Hulud scan |
 | [`software/higgsfield`](./software/higgsfield/README.md) | Higgsfield CLI from release tarball — pinned version + per-arch SHAs (unsigned binary). **Opt-in only**; pairs with the `higgsfield` plugin in `tlc-claude-plugins` | Creative team / IT-dev opt-in |
+| [`software/hyperframes`](./software/hyperframes/README.md) | HyperFrames CLI ("write HTML, render video") — pinned npm global install; self-bootstraps Node + ffmpeg from this repo so one Mosyle script stands up the whole render chain | Creative team / IT-dev opt-in |
+| [`software/ffmpeg`](./software/ffmpeg/README.md) | FFmpeg + ffprobe static binaries — pinned per-arch SHAs are the only integrity check (upstream is unsigned). Encoder half of HyperFrames; independently deployable | Opt-in (HyperFrames hosts) |
 | [`software/homebrew`](./software/homebrew/README.md) | Homebrew installer — **IT-dev only**, not in the standard chain | IT-dev |
 | [`software/security`](./software/security/README.md) | Ad-hoc read-only threat scans (Shai-Hulud npm worm scanner) | Node-bearing machines |
 | [`software/chrome`](./software/chrome/README.md) | Force-install Google PWAs via Chrome Enterprise Core | Top-level org |
@@ -79,6 +83,7 @@ For tools and Mosyle scripts that need to fetch the latest version of a file:
 |---|---|
 | Claude Code policy | `https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/claude/CLAUDE.md` |
 | Managed settings | `https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/claude/managed-settings.json` |
+| TLC `.gitignore` template (fetched at runtime by `coding:github-repo-setup`) | `https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/claude/templates/gitignore` |
 
 The `tlc-claude-plugins` marketplace is referenced as `The-Life-Church/tlc-claude-plugins` in Claude Code's `/plugin marketplace add` command (requires `gh auth` for private-repo access).
 
