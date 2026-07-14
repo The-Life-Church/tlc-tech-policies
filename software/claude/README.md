@@ -17,7 +17,7 @@ This folder contains TLC's Claude policy across every surface: Claude Code (CLI)
 ## Files
 
 ### `CLAUDE.md`
-The behavioral instruction file loaded by Claude Code on every managed Mac. It shapes how Claude behaves across all projects — slowing down before making changes, asking questions before building, knowing when to loop in IT, and keeping work local until it's ready to go further. Links to `SKILL.md` for the cross-surface kickoff flow.
+The behavioral instruction file loaded by Claude Code on every managed Mac. It shapes how Claude behaves across all projects — slowing down before making changes, asking questions before building, knowing when to loop in IT, and keeping work local until it's ready to go further. Guardrails stay resident in the file; situational depth lives in the `coding` plugin's skills at [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins), which the policy points at by name.
 
 **To view the live file:** [software/claude/CLAUDE.md](./CLAUDE.md)
 
@@ -60,7 +60,7 @@ A JSON settings file deployed to `/Library/Application Support/ClaudeCode/manage
 - `git push --force` — force-pushing to a git repo
 - Reading `.env` files, `*.pem`, `*.key`, or anything in a `secrets/` folder
 
-Users can still run any of these themselves in Terminal (subject to the shell policy on vibe-coder devices) — this only prevents Claude from doing it automatically. When a deny rule changes here, sync the human-readable lists in `CLAUDE.md` ("When a Command Is Blocked") and `software/shell/README.md`.
+Users can still run any of these themselves in Terminal (subject to the shell policy on vibe-coder devices) — this only prevents Claude from doing it automatically. When a deny rule changes here, sync the summary list above and `software/shell/README.md` — the fleet `CLAUDE.md` and the `coding:command-blocked` skill carry no lists (the skill reads this file live via its raw URL).
 
 **Plugins** — the file also registers the private `tlc-claude-plugins` marketplace (`extraKnownMarketplaces`, with `autoUpdate: true`) and force-enables org-wide plugins via `enabledPlugins`:
 
