@@ -25,8 +25,9 @@
 # stands up the whole local toolchain, in order:
 #   1. ensures Node >= 22 — bootstraps software/node/install.sh from the repo if
 #      it's missing or too old (idempotent; skipped when already current)
-#   2. ensures FFmpeg + ffprobe — bootstraps software/ffmpeg/install.sh the same
-#      way (idempotent; skipped when already present)
+#   2. converges FFmpeg + ffprobe — always runs software/ffmpeg/install.sh (it
+#      is SHA-idempotent), so hosts with a stray brew/manual ffmpeg still get
+#      the reviewed pinned binaries at /usr/local/bin
 #   3. installs/pins the `hyperframes` CLI globally (fleet Node's prefix)
 #   4. installs the HyperFrames skills + routing rule for the CONSOLE USER
 #      (drops from root), so the agent has them; the CLI itself needs no skills
@@ -132,11 +133,12 @@ BIN="${NPM_BIN}/hyperframes"
 
 log "Starting on ${HOSTNAME} (${SERIAL}). Node $(node -v), npm $(npm -v). Global prefix: $(npm prefix -g)."
 
-# --- Ensure FFmpeg + ffprobe (bootstrap the repo's installer if missing) ---
+# --- Converge FFmpeg + ffprobe (always run the repo's pinned installer) ---
 # HyperFrames shells out to system ffmpeg/ffprobe for encoding + media probing.
-if ! command -v ffmpeg >/dev/null 2>&1 || ! command -v ffprobe >/dev/null 2>&1; then
-    bootstrap_from_repo ffmpeg "$FFMPEG_INSTALLER_URL" || exit 1
-fi
+# Run the bootstrap unconditionally: a host that already has a brew or manual
+# ffmpeg on PATH would otherwise never converge to the reviewed pinned binaries.
+# The installer is SHA-idempotent — a fast no-op once /usr/local/bin is current.
+bootstrap_from_repo ffmpeg "$FFMPEG_INSTALLER_URL" || exit 1
 if ! command -v ffmpeg >/dev/null 2>&1 || ! command -v ffprobe >/dev/null 2>&1; then
     log "ERROR: ffmpeg/ffprobe still not found after bootstrap — toolchain incomplete."
     exit 1
@@ -172,6 +174,41 @@ else
     log "hyperframes ${HYPERFRAMES_VERSION} installed."
 fi
 
+# --- Pin protection: disable the CLI's self-update path -----------------------
+# The CLI schedules its own `npm install -g hyperframes@latest` unless
+# HYPERFRAMES_NO_AUTO_INSTALL / HYPERFRAMES_NO_UPDATE_CHECK are set (verified
+# in 0.7.56's cli.js). On a writable prefix that silently bypasses the 14-day
+# reviewed pin; on a root-owned one it fails noisily on every user run. Replace
+# npm's bin symlink with a wrapper that sets both and execs the real CLI. npm
+# recreates the symlink on every (re)install, so this re-wraps right after —
+# idempotent on repeat runs.
+NODE_BIN=$(command -v node)
+wrap_cli() {
+    local target
+    target=$(node -p "const p=require('${PKG_DIR}/package.json'); const b=p.bin; require('path').resolve('${PKG_DIR}', typeof b==='string' ? b : b.hyperframes)" 2>/dev/null || echo "")
+    if [ -z "$target" ] || [ ! -f "$target" ]; then
+        log "WARN: could not resolve the hyperframes entry point — leaving npm's bin untouched (self-update stays enabled)."
+        return 0
+    fi
+    if [ ! -L "$BIN" ] && ! grep -q "TLC-managed wrapper" "$BIN" 2>/dev/null; then
+        log "WARN: ${BIN} is neither npm's symlink nor our wrapper — leaving it untouched."
+        return 0
+    fi
+    rm -f "$BIN"   # a plain redirect would write THROUGH the symlink into cli.js
+    cat > "$BIN" <<WRAP
+#!/bin/bash
+# TLC-managed wrapper — keeps hyperframes on the reviewed fleet pin.
+# Without these, the CLI schedules its own npm -g upgrade to @latest.
+# Recreated by software/hyperframes/install.sh on every run.
+export HYPERFRAMES_NO_UPDATE_CHECK=1
+export HYPERFRAMES_NO_AUTO_INSTALL=1
+exec "${NODE_BIN}" "${target}" "\$@"
+WRAP
+    chmod 755 "$BIN"
+    log "Wrapped ${BIN} — self-update/auto-install disabled; the reviewed pin is authoritative."
+}
+wrap_cli
+
 # --- Verify the CLI runs (npm's own global bin) ---
 if ! timeout 60 "$BIN" --version >/dev/null 2>&1; then
     log "ERROR: hyperframes installed but failed to run (--version)."
@@ -190,14 +227,21 @@ else
     USER_HOME=$(dscl . -read "/Users/${CONSOLE_USER}" NFSHomeDirectory 2>/dev/null | awk '{print $2}')
     if [ -d "${USER_HOME}/.claude/skills/hyperframes" ]; then
         log "HyperFrames skills already present for ${CONSOLE_USER} — leaving them (they self-update at runtime)."
+    elif ! /usr/bin/xcode-select -p >/dev/null 2>&1; then
+        # The skills installer shells out to git; without it, it prints a skip
+        # and still exits 0 — so check up front instead of trusting the exit code.
+        log "WARN: Xcode CLT (git) not installed — the skills step needs it. Deploy software/xcode to this host; a recurring run will land the skills."
     else
         log "Installing HyperFrames skills for ${CONSOLE_USER} (dropping from root)..."
-        # Run as the user with the fleet toolchain on PATH so `hyperframes` and
-        # the `node` its shebang needs both resolve.
+        # Run as the user with the fleet toolchain on PATH so hyperframes and
+        # the node its shebang needs both resolve.
         if ! sudo -u "$CONSOLE_USER" -H env PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin" "$BIN" skills 2>&1 | tee -a "$LOG_FILE"; then
             log "WARN: skills install returned non-zero — CLI is fine; a recurring run will retry."
-        else
+        elif [ -d "${USER_HOME}/.claude/skills/hyperframes" ]; then
             log "HyperFrames skills installed for ${CONSOLE_USER}."
+        else
+            # Exit 0 with no skills dir = the installer skipped internally.
+            log "WARN: skills command exited 0 but ~/.claude/skills/hyperframes is absent — treating as not installed; a recurring run will retry."
         fi
     fi
 
