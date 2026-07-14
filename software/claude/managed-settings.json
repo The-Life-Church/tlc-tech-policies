@@ -61,6 +61,6 @@
     }
   },
   "enabledPlugins": {
-    "innovation@tlc-claude-plugins": true
+    "coding@tlc-claude-plugins": true
   }
 }

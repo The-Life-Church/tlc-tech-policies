@@ -6,9 +6,24 @@ This folder contains TLC's Claude policy across every surface: Claude Code (CLI)
 |---|---|---|
 | `CLAUDE.md` | Claude Code (CLI on managed Macs) | Mosyle → `/etc/claude-code/CLAUDE.md`, daily refresh |
 | `ADMIN.md` | Claude.ai chat, Claude desktop app, Cowork (org-level framing) | Manually pasted into Claude admin console → Organization preferences (3000-char cap) |
-| `idea` skill in the `innovation` plugin at [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) (private repo) | Claude.ai chat, Claude desktop app, Cowork, Claude Code (intent-triggered kickoff flow) | Claude Code: plugin marketplace install. Chat + Cowork: admin-console GitHub sync from the private repo. |
+| `coding` plugin at [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) (private repo) — skills: `idea`, `going-live`, `command-blocked`, `github-repo-setup`, `resource-site` | Claude.ai chat, Claude desktop app, Cowork, Claude Code (intent-triggered skills; `CLAUDE.md` points at them) | Claude Code: plugin marketplace install (force-enabled via `managed-settings.json`). Chat + Cowork: admin-console GitHub sync from the private repo. |
 
-`CLAUDE.md` is long-form build-stage policy. `ADMIN.md` is short tone/routing framing that fits the admin console's character cap. The `innovation` plugin's `idea` skill fills the gap: long-form kickoff content that fires on intent in chat/Cowork/Claude Code, complementing the short admin-console block. It lives in a private repo because the Claude.ai admin console only syncs skills from private GitHub sources.
+`CLAUDE.md` is long-form build-stage policy. `ADMIN.md` is short tone/routing framing that fits the admin console's character cap. The `coding` plugin's skills fill the gap: long-form situational content (kickoff, IT handoff, blocked commands, repo setup) that fires on intent, complementing the short admin-console block. They live in a private repo because the Claude.ai admin console only syncs skills from private GitHub sources.
+
+#### Skills referenced by CLAUDE.md
+
+The fleet `CLAUDE.md` keeps guardrails resident and points at plugin skills for situational depth. Those skills live in the `coding` plugin at [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) and reach devices via the marketplace registration + `enabledPlugins` in `managed-settings.json`:
+
+| Pointer in CLAUDE.md | Skill | Carries |
+|---|---|---|
+| `coding:idea` | `coding/skills/idea` | Cross-surface kickoff flow (doing-vs-building check, next-move menu) |
+| `coding:going-live` | `coding/skills/going-live` | IT handoff: inspect codebase → interview → right-tool recheck → systems-request brief |
+| `coding:command-blocked` | `coding/skills/command-blocked` | Both restriction layers + next steps. Carries **no lists** — reads `managed-settings.json` and the shell policy from this repo live |
+| `coding:github-repo-setup` | `coding/skills/github-repo-setup` | First-time GitHub auth, fine-grained PATs, coworker sharing; fetches the `.gitignore` template below |
+
+**Keep pointers and skill names in lockstep** — a renamed skill silently breaks the policy's pointer. When editing either side, check the other.
+
+The `templates/` folder here holds fleet-facing files skills fetch at runtime (currently `templates/gitignore`, fetched by `coding:github-repo-setup` via raw URL — another reason this repo stays public).
 
 `CLAUDE.md` and `managed-settings.json` deploy via Mosyle scripts in this folder. `ADMIN.md` deploys via manual paste into the admin console. The plugin deploys via the marketplace in `tlc-claude-plugins` (Claude Code) and admin-console GitHub sync (chat + Cowork).
 
@@ -64,7 +79,7 @@ Users can still run any of these themselves in Terminal (subject to the shell po
 
 **Plugins** — the file also registers the private `tlc-claude-plugins` marketplace (`extraKnownMarketplaces`, with `autoUpdate: true`) and force-enables org-wide plugins via `enabledPlugins`:
 
-- **Force-enabled (everyone):** `innovation` — the cross-surface kickoff flow. Add a plugin here only if most staff should have it; every enabled skill adds its trigger description to every session and can auto-fire on loosely matching requests.
+- **Force-enabled (everyone):** `coding` — the kickoff flow plus the build/handoff skills the fleet `CLAUDE.md` points at (see *Skills referenced by CLAUDE.md* above). Add a plugin here only if most staff should have it; every enabled skill adds its trigger description to every session and can auto-fire on loosely matching requests.
 - **Opt-in (install yourself):** anything else published in the marketplace. Because the marketplace is already known on every device, any user can run `/plugin install <name>@tlc-claude-plugins` — no settings change, auto-updates included. Example: the `higgsfield` plugin (vendored Higgsfield generation skills) — intended for creatives who actually use Higgsfield, not the whole org. On the chat/Cowork side the same skills arrive via the admin-console sync of the repo, where users toggle them in their own settings.
 
 ---

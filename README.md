@@ -42,9 +42,9 @@ TLC staff use Claude across three surfaces. The policy is split across two repos
 |---|---|---|---|
 | **Claude Code** (CLI on managed Mac) | `software/claude/CLAUDE.md` | `tlc-tech-policies` (this repo, public) | Mosyle → `/etc/claude-code/CLAUDE.md`, daily refresh |
 | **Claude.ai chat + Claude desktop app + Cowork** (org-level framing) | `software/claude/ADMIN.md` | `tlc-tech-policies` (this repo, public) | Pasted into Claude admin console → Organization preferences (3000-char limit) |
-| **All surfaces** (intent-triggered kickoff flow + plugin marketplace) | `innovation/skills/idea/SKILL.md` + `.claude-plugin/marketplace.json` | [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) (private) | Claude Code: plugin marketplace install. Chat + Cowork: admin-console GitHub sync (requires private repo). |
+| **All surfaces** (intent-triggered skills + plugin marketplace) | `coding/skills/` (`idea`, `going-live`, `command-blocked`, `github-repo-setup`, `resource-site`) + `.claude-plugin/marketplace.json` | [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) (private) | Claude Code: plugin marketplace install, force-enabled via `managed-settings.json`. Chat + Cowork: admin-console GitHub sync (requires private repo). |
 
-The `idea` skill is the canonical cross-surface kickoff flow that fires when someone brings a new idea to Claude — covers the warm welcome, brain-dump prompt, doing-vs-building check, and six-option next-move menu (keep going here, set up a Claude Project, use Cowork, organize a folder, share with IT, graduate to Claude Code).
+The `coding` plugin carries the intent-triggered depth: `idea` is the canonical cross-surface kickoff flow (warm welcome, brain dump, doing-vs-building check, six-option next-move menu); the others are the build-stage skills the fleet `CLAUDE.md` points at — see [`software/claude/README.md`](./software/claude/README.md#skills-referenced-by-claudemd) for the pointer table.
 
 Skills live in the private companion repo because the Claude.ai admin console only accepts private GitHub repos as skill sync sources. Everything else stays public so Mosyle's unauthenticated `raw.githubusercontent.com` pulls keep working.
 
