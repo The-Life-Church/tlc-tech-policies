@@ -1,0 +1,58 @@
+# =============================================================
+# SECRETS — never commit these, ever
+# API keys, passwords, and tokens live in .env files.
+# If a key ends up in GitHub, it can be found and misused —
+# even in private repos. This keeps them safe.
+# =============================================================
+.env
+.env.local
+.env.*
+
+# =============================================================
+# NODE / JAVASCRIPT
+# =============================================================
+node_modules/
+dist/
+.next/
+.cache/
+
+# =============================================================
+# PYTHON
+# =============================================================
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# =============================================================
+# MACOS
+# =============================================================
+.DS_Store
+Thumbs.db
+
+# =============================================================
+# PROJECT OUTPUT
+# Downloaded files, logs, and generated content
+# usually don't belong in version control
+# =============================================================
+downloads/
+output/
+*.log
+
+# =============================================================
+# FIREBASE
+# Debug logs and local emulator data don't belong in the repo.
+# .firebaserc and firebase.json are fine to commit — they hold
+# project config, not secrets.
+# =============================================================
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+.firebase/
+
+# =============================================================
+# LOCAL CLAUDE CONTEXT
+# Personal notes that shouldn't be shared with the team
+# =============================================================
+CLAUDE.local.md
