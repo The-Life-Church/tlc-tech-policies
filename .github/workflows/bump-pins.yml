@@ -11,10 +11,12 @@
 # job. Examples already present:
 #   - Node's dist index — the `node` job
 #   - npm registry — `npm view <pkg> version` + `time` for the cooldown date
-#     (the `hyperframes` job; version pin only, no SHA)
+#     (the `hyperframes` and `firebase-tools` jobs; version pin only, no SHA)
 #   - a GitHub release that publishes NO checksums file — download each asset
 #     and hash it in-CI, because the matrix can only awk a published checksums
 #     file (the `ffmpeg` job)
+#   - the Adoptium API — version+build+per-arch pkg SHAs straight from the API,
+#     deliberately pinned to one LTS major (the `temurin` job)
 # Tools with no pin (e.g. Homebrew — always-latest installer, self-updating)
 # have nothing to bump and don't belong here.
 # Convention also documented in the repo-root CLAUDE.md ("Adding a managed tool installer").
@@ -588,4 +590,242 @@ jobs:
           TEXT=$(printf '%s\n%s' \
             "<${RUN_URL}|Bump installer pins> · <${REPO_URL}|${REPO}>" \
             "❌ FFmpeg job failed — <${RUN_URL}|run logs>")
+          jq -n --arg text "$TEXT" '{text: $text}' | curl -fsS -X POST -H 'Content-Type: application/json' -d @- "$WEBHOOK"
+
+  # ── Firebase CLI: npm package `firebase-tools`. Same shape as hyperframes —
+  # version pin only (npm integrity is version + registry).
+  firebase-tools:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Check firebase-tools (npm)
+        id: bump
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          FILE="software/firebase-tools/install.sh"
+
+          CURRENT=$(grep -m1 '^FIREBASE_TOOLS_VERSION=' "$FILE" | cut -d'"' -f2)
+
+          LATEST=$(npm view firebase-tools version)
+          if [ -z "$LATEST" ]; then
+            echo "ERROR: could not read latest firebase-tools version from npm."
+            exit 1
+          fi
+
+          if [ "$LATEST" = "$CURRENT" ]; then
+            echo "firebase-tools pin is current ($CURRENT). Nothing to do."
+            exit 0
+          fi
+
+          REL_DATE=$(npm view firebase-tools time --json | jq -r --arg v "$LATEST" '.[$v]')
+          if [ -z "$REL_DATE" ] || [ "$REL_DATE" = "null" ]; then
+            echo "ERROR: could not read publish time for firebase-tools@${LATEST}."
+            exit 1
+          fi
+
+          AGE_DAYS=$(( ( $(date +%s) - $(date -d "$REL_DATE" +%s) ) / 86400 ))
+          if [ "$IGNORE_COOLDOWN" != "true" ] && [ "$AGE_DAYS" -lt "$COOLDOWN_DAYS" ]; then
+            echo "firebase-tools $LATEST is only ${AGE_DAYS}d old (< ${COOLDOWN_DAYS}d cooldown). Skipping until it ages."
+            exit 0
+          fi
+
+          BRANCH="chore/bump-firebase-tools-${LATEST}"
+          if git ls-remote --exit-code origin "refs/heads/${BRANCH}" >/dev/null 2>&1; then
+            echo "Branch ${BRANCH} already exists — PR presumably open. Skipping."
+            exit 0
+          fi
+
+          git checkout -b "$BRANCH"
+          sed -i "s|^FIREBASE_TOOLS_VERSION=\".*\"|FIREBASE_TOOLS_VERSION=\"${LATEST}\"|" "$FILE"
+          git add "$FILE"
+          git commit -m "Bump firebase-tools pin: ${CURRENT} -> ${LATEST}"
+          git push origin "$BRANCH"
+
+          PR_URL=$(gh pr create \
+            --title "Bump firebase-tools pin: ${CURRENT} -> ${LATEST}" \
+            --body "$(cat <<EOF
+          Automated pin bump from the \`bump-pins\` workflow.
+
+          - **Version:** \`${CURRENT}\` -> \`${LATEST}\` (npm package \`firebase-tools\`)
+          - **Published:** ${REL_DATE} (${AGE_DAYS} days old; cooldown ${COOLDOWN_DAYS}d, ignore_cooldown=${IGNORE_COOLDOWN})
+          - **npm:** https://www.npmjs.com/package/firebase-tools/v/${LATEST}
+          - **Release notes:** https://github.com/firebase/firebase-tools/releases/tag/v${LATEST}
+
+          This binary carries the fleet's Firebase CLI, emulators, and MCP server — the single version every project's \`.mcp.json\` resolves to.
+          Review checklist: release notes look sane, version is a real published release on npm.
+          On merge, devices converge on their next recurring Mosyle run.
+          EOF
+          )")
+
+          {
+            echo "pr_url=${PR_URL}"
+            echo "old=${CURRENT}"
+            echo "new=${LATEST}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Notify Google Chat (bump PR opened)
+        if: ${{ steps.bump.outputs.pr_url != '' }}
+        env:
+          WEBHOOK: ${{ secrets.CHAT_WEBHOOK_URL }}
+          PR_URL: ${{ steps.bump.outputs.pr_url }}
+          OLD: ${{ steps.bump.outputs.old }}
+          NEW: ${{ steps.bump.outputs.new }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REPO: ${{ github.repository }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "CHAT_WEBHOOK_URL secret not set — skipping notify."; exit 0; fi
+          TEXT=$(printf '%s\n%s' \
+            "<${RUN_URL}|Bump installer pins> · <${REPO_URL}|${REPO}>" \
+            "✅ firebase-tools: ${OLD} -> ${NEW} — <${PR_URL}|review the PR>")
+          jq -n --arg text "$TEXT" '{text: $text}' | curl -fsS -X POST -H 'Content-Type: application/json' -d @- "$WEBHOOK"
+
+      - name: Notify Google Chat (job failed)
+        if: ${{ failure() }}
+        env:
+          WEBHOOK: ${{ secrets.CHAT_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REPO: ${{ github.repository }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "CHAT_WEBHOOK_URL secret not set — skipping notify."; exit 0; fi
+          TEXT=$(printf '%s\n%s' \
+            "<${RUN_URL}|Bump installer pins> · <${REPO_URL}|${REPO}>" \
+            "❌ firebase-tools job failed — <${RUN_URL}|run logs>")
+          jq -n --arg text "$TEXT" '{text: $text}' | curl -fsS -X POST -H 'Content-Type: application/json' -d @- "$WEBHOOK"
+
+  # ── Temurin JRE: the Adoptium API is the source of truth (release tags use a
+  # jdk-<ver>+<build> scheme the github-release matrix can't template, and the
+  # API publishes the pkg checksums directly). Deliberately tracks ONE LTS
+  # major (TEMURIN_MAJOR in the script) — moving majors is a manual change to
+  # the script, never an automated bump.
+  temurin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Check Temurin JRE (Adoptium API)
+        id: bump
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          FILE="software/java/install.sh"
+
+          MAJOR=$(grep -m1 '^TEMURIN_MAJOR=' "$FILE" | cut -d'"' -f2)
+          CUR_VER=$(grep -m1 '^TEMURIN_VERSION=' "$FILE" | cut -d'"' -f2)
+          CUR_BUILD=$(grep -m1 '^TEMURIN_BUILD=' "$FILE" | cut -d'"' -f2)
+
+          API=$(curl -fsSL "https://api.adoptium.net/v3/assets/latest/${MAJOR}/hotspot?os=mac&image_type=jre&vendor=eclipse")
+          RELEASE_NAME=$(echo "$API" | jq -r '.[0].release_name') # e.g. jdk-21.0.11+10
+          BARE="${RELEASE_NAME#jdk-}"
+          LATEST_VER="${BARE%+*}"
+          LATEST_BUILD="${BARE#*+}"
+          if [ -z "$LATEST_VER" ] || [ -z "$LATEST_BUILD" ] || [ "$RELEASE_NAME" = "null" ]; then
+            echo "ERROR: could not parse release_name from the Adoptium API."
+            exit 1
+          fi
+
+          if [ "$LATEST_VER" = "$CUR_VER" ] && [ "$LATEST_BUILD" = "$CUR_BUILD" ]; then
+            echo "Temurin pin is current (${CUR_VER}+${CUR_BUILD}). Nothing to do."
+            exit 0
+          fi
+
+          # binary.updated_at stands in for the release date (avoids fetching
+          # the GitHub release by its +-bearing tag just for a timestamp).
+          PUBLISHED=$(echo "$API" | jq -r '.[0].binary.updated_at')
+          AGE_DAYS=$(( ( $(date +%s) - $(date -d "$PUBLISHED" +%s) ) / 86400 ))
+          if [ "$IGNORE_COOLDOWN" != "true" ] && [ "$AGE_DAYS" -lt "$COOLDOWN_DAYS" ]; then
+            echo "Temurin ${LATEST_VER}+${LATEST_BUILD} is only ${AGE_DAYS}d old (< ${COOLDOWN_DAYS}d cooldown). Skipping until it ages."
+            exit 0
+          fi
+
+          BRANCH="chore/bump-temurin-${LATEST_VER}-${LATEST_BUILD}"
+          if git ls-remote --exit-code origin "refs/heads/${BRANCH}" >/dev/null 2>&1; then
+            echo "Branch ${BRANCH} already exists — PR presumably open. Skipping."
+            exit 0
+          fi
+
+          SHA_ARM64=$(echo "$API" | jq -r '.[] | select(.binary.architecture=="aarch64") | .binary.installer.checksum')
+          SHA_X64=$(echo "$API" | jq -r '.[] | select(.binary.architecture=="x64") | .binary.installer.checksum')
+          if [ -z "$SHA_ARM64" ] || [ "$SHA_ARM64" = "null" ] || [ -z "$SHA_X64" ] || [ "$SHA_X64" = "null" ]; then
+            echo "ERROR: could not read per-arch installer checksums from the Adoptium API."
+            exit 1
+          fi
+
+          git checkout -b "$BRANCH"
+          sed -i "s|^TEMURIN_VERSION=\".*\"|TEMURIN_VERSION=\"${LATEST_VER}\"|" "$FILE"
+          sed -i "s|^TEMURIN_BUILD=\".*\"|TEMURIN_BUILD=\"${LATEST_BUILD}\"|" "$FILE"
+          sed -i "s|^TEMURIN_SHA256_ARM64=\".*\"|TEMURIN_SHA256_ARM64=\"${SHA_ARM64}\"|" "$FILE"
+          sed -i "s|^TEMURIN_SHA256_X64=\".*\"|TEMURIN_SHA256_X64=\"${SHA_X64}\"|" "$FILE"
+          git add "$FILE"
+          git commit -m "Bump Temurin JRE pin: ${CUR_VER}+${CUR_BUILD} -> ${LATEST_VER}+${LATEST_BUILD}"
+          git push origin "$BRANCH"
+
+          RELEASE_URL="https://github.com/adoptium/temurin${MAJOR}-binaries/releases/tag/jdk-${LATEST_VER}%2B${LATEST_BUILD}"
+          PR_URL=$(gh pr create \
+            --title "Bump Temurin JRE pin: ${CUR_VER}+${CUR_BUILD} -> ${LATEST_VER}+${LATEST_BUILD}" \
+            --body "$(cat <<EOF
+          Automated pin bump from the \`bump-pins\` workflow.
+
+          - **Version:** \`${CUR_VER}+${CUR_BUILD}\` -> \`${LATEST_VER}+${LATEST_BUILD}\` (Temurin ${MAJOR} JRE)
+          - **Binary updated:** ${PUBLISHED} (${AGE_DAYS} days old; cooldown ${COOLDOWN_DAYS}d, ignore_cooldown=${IGNORE_COOLDOWN})
+          - **SHA-256 (aarch64):** \`${SHA_ARM64}\`
+          - **SHA-256 (x64):** \`${SHA_X64}\` (both from the Adoptium API)
+          - **Release:** ${RELEASE_URL}
+
+          Signed Eclipse Adoptium pkgs; the pinned SHAs are verified anyway. This job tracks the ${MAJOR} LTS line only — a new LTS major is a manual change.
+          Review checklist: release is real on adoptium/temurin${MAJOR}-binaries; checksums came from the Adoptium API in this run.
+          On merge, devices converge on their next recurring Mosyle run.
+          EOF
+          )")
+
+          {
+            echo "pr_url=${PR_URL}"
+            echo "old=${CUR_VER}+${CUR_BUILD}"
+            echo "new=${LATEST_VER}+${LATEST_BUILD}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Notify Google Chat (bump PR opened)
+        if: ${{ steps.bump.outputs.pr_url != '' }}
+        env:
+          WEBHOOK: ${{ secrets.CHAT_WEBHOOK_URL }}
+          PR_URL: ${{ steps.bump.outputs.pr_url }}
+          OLD: ${{ steps.bump.outputs.old }}
+          NEW: ${{ steps.bump.outputs.new }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REPO: ${{ github.repository }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "CHAT_WEBHOOK_URL secret not set — skipping notify."; exit 0; fi
+          TEXT=$(printf '%s\n%s' \
+            "<${RUN_URL}|Bump installer pins> · <${REPO_URL}|${REPO}>" \
+            "✅ Temurin JRE: ${OLD} -> ${NEW} — <${PR_URL}|review the PR>")
+          jq -n --arg text "$TEXT" '{text: $text}' | curl -fsS -X POST -H 'Content-Type: application/json' -d @- "$WEBHOOK"
+
+      - name: Notify Google Chat (job failed)
+        if: ${{ failure() }}
+        env:
+          WEBHOOK: ${{ secrets.CHAT_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REPO: ${{ github.repository }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "CHAT_WEBHOOK_URL secret not set — skipping notify."; exit 0; fi
+          TEXT=$(printf '%s\n%s' \
+            "<${RUN_URL}|Bump installer pins> · <${REPO_URL}|${REPO}>" \
+            "❌ Temurin JRE job failed — <${RUN_URL}|run logs>")
           jq -n --arg text "$TEXT" '{text: $text}' | curl -fsS -X POST -H 'Content-Type: application/json' -d @- "$WEBHOOK"
