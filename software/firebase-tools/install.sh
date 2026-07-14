@@ -55,6 +55,10 @@ set -euo pipefail
 FIREBASE_TOOLS_VERSION="15.22.3"
 # Minimum Node major the CLI requires (firebase-tools v15 engines: ">=20").
 NODE_MIN_MAJOR="20"
+# Minimum Java major the emulators require (firebase-tools v15 emulators need
+# Java >= 21 — an older JRE passes a naive presence check but fails at
+# `emulators:start`).
+JAVA_MIN_MAJOR="21"
 # Prerequisites — bootstrapped from this repo's own pinned installers if
 # missing (same raw URLs Mosyle uses; each target is idempotent).
 NODE_INSTALLER_URL="https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/node/install.sh"
@@ -129,16 +133,18 @@ BIN="${NPM_BIN}/firebase"
 
 log "Starting on ${HOSTNAME} (${SERIAL}). Node $(node -v), npm $(npm -v). Global prefix: $(npm prefix -g)."
 
-# --- Ensure a Java runtime (Firestore emulator requires a JRE) ---
-if ! /usr/libexec/java_home -v 11+ >/dev/null 2>&1; then
-    log "No Java runtime found — bootstrapping the pinned Temurin JRE..."
+# --- Ensure Java >= JAVA_MIN_MAJOR (Firestore emulator requirement) ---
+# An older JRE (11/17) on the machine would pass a bare presence check, but
+# the emulators refuse it — require the actual minimum before skipping.
+if ! /usr/libexec/java_home -v "${JAVA_MIN_MAJOR}+" >/dev/null 2>&1; then
+    log "Java >= ${JAVA_MIN_MAJOR} not found — bootstrapping the pinned Temurin JRE..."
     bootstrap_from_repo java "$JAVA_INSTALLER_URL" || exit 1
 fi
-if ! /usr/libexec/java_home -v 11+ >/dev/null 2>&1; then
-    log "ERROR: Java still not found after bootstrap — the Firestore emulator would not run."
+if ! /usr/libexec/java_home -v "${JAVA_MIN_MAJOR}+" >/dev/null 2>&1; then
+    log "ERROR: Java >= ${JAVA_MIN_MAJOR} still not found after bootstrap — the Firestore emulator would not run."
     exit 1
 fi
-log "Java OK: $(/usr/libexec/java_home -v 11+ 2>/dev/null)."
+log "Java OK: $(/usr/libexec/java_home -v "${JAVA_MIN_MAJOR}+" 2>/dev/null)."
 
 installed_version() {
     [ -f "${PKG_DIR}/package.json" ] || { echo ""; return; }

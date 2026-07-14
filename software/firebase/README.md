@@ -61,12 +61,14 @@ Explicitly **not** granted: any Hosting/App Hosting role, Functions admin, Auth 
 | App type | Deploy path | Credentials involved |
 |---|---|---|
 | **App Hosting** (JS/Next.js apps) | **Native auto-rollouts.** Backend connected to the org repo (Developer Connect, IT one-time), live branch = `main`, **branch protection incl. admins** (PR + required checks). Merging is deploying. | None. The repo connection is the auth. |
-| **Classic Hosting** (static) | **GitHub Action** running `firebase deploy`, authenticated via **Workload Identity Federation** — per-app deploy SA, WIF provider conditioned to `repository == "The-Life-Church/<repo>"`. | The SA, assumable only by that repo. **No JSON keys.** |
+| **Classic Hosting** (static) | **GitHub Action** running `firebase deploy`, authenticated via **Workload Identity Federation** — per-app deploy SA, WIF provider conditioned to **repo AND protected ref**: `attribute.repository == "The-Life-Church/<repo>" && attribute.ref == "refs/heads/main"` (map `attribute.ref` from `assertion.ref` in the provider). | The SA, assumable only by that repo's `main`. **No JSON keys.** |
 | **Manual CLI** (`firebase deploy`, `apphosting:rollouts:create`) | **IT break-glass only** — e.g. GitHub/Cloud Build outage. Never a builder workflow, never a Claude workflow. | IT's own login. |
 
 Why manual-through-Claude is not a path: it ships whatever is on the laptop (not what's in git — no review, no reproducible build), it requires humans to hold deploy IAM this model deliberately withholds, and it contradicts the fleet policy's provisioning-command guardrail.
 
 The quality gate is **branch protection, not the deploy tool**: only reviewed, checks-passing code can reach `main`, so auto-rollout/CI faithfully shipping `main` is safe by construction. Enforce for admins too — an admin direct-push would deploy unreviewed code.
+
+**The WIF condition must bind the ref, not just the repo.** Builders have write access to their repo, so a repo-only condition lets any branch's workflow request `id-token: write` and assume the deploy SA — deploying around branch protection entirely. Binding `attribute.ref == "refs/heads/main"` closes that: tokens minted from other branches can't federate, so the protected branch really is the only deploy path. (App Hosting auto-rollouts don't have this hole — the live-branch setting is the binding.)
 
 ## 5. Deploy identities
 
@@ -80,7 +82,7 @@ Run once per new app; afterwards the builder ships by merging.
 
 1. **Repo** — create the org repo from the app template (private, `The-Life-Church`); builder gets write access.
 2. **Home** — per-app project (`tlc-<app>-prod`, billing + budget alert, enable APIs) — or, shared-project interim: create the named Firestore DB, the `tlc-<app>-assets` bucket, and the Hosting site / App Hosting backend.
-3. **Deploy wiring** — App Hosting: connect the repo, live branch `main`, `apphosting.yaml` present. Static: confirm the template's deploy workflow, create the deploy SA + WIF pool/provider conditioned to the repo.
+3. **Deploy wiring** — App Hosting: connect the repo, live branch `main`, `apphosting.yaml` present. Static: confirm the template's deploy workflow, create the deploy SA + WIF pool/provider conditioned to **the repo and `refs/heads/main`** (see §4 — repo-only is bypassable from any branch).
 4. **Branch protection** on `main` — PR required, checks required, include admins.
 5. **Builder bundle** (§3) for each builder on the app.
 6. **Secrets** — into Secret Manager, wired via `apphosting.yaml` / workflow env; runtime SA granted per-secret access.
@@ -90,7 +92,7 @@ Run once per new app; afterwards the builder ships by merging.
 ## 7. Tooling and the MCP
 
 - **firebase-tools** is installed globally and pinned (`software/firebase-tools/` — same pattern as hyperframes: npm global, bump-pins, Mosyle). It carries the CLI, the **emulators**, and the **MCP server** in one binary. The Firestore emulator needs Java (`software/java/`, bootstrapped automatically). **Project repos carry no CLI version of their own** — `.mcp.json` and scripts reference the bare `firebase` command, so forks never go stale and one bump PR updates the entire fleet.
-- **MCP config** (ships in the template's `.mcp.json`): point at the **global binary**, never the docs' `npx -y firebase-tools …` form — MCP server spawning bypasses the Bash `npx` deny rule AND `npx -y` fetches latest, silently skipping the reviewed pin.
+- **MCP config** (ships in the template's `.mcp.json`): point at the **absolute installer-managed path** — `"command": "/usr/local/bin/firebase"` — never the docs' `npx -y firebase-tools …` form (MCP spawning bypasses the Bash `npx` deny rule AND `npx -y` fetches latest, skipping the reviewed pin), and not a bare `firebase` either: MCP hosts can launch without a login shell's PATH, and a brew/user install earlier on PATH would silently run an unpinned CLI. IT machines running brew-only firebase should run the fleet installer too (they coexist) or override the path locally.
 - **MCP reach = the login's IAM.** Builders aren't logged into the CLI → MCP against prod fails closed; against the emulators (`demo-` project, no login) it's fully capable. IT machines are logged in → same config manages real projects.
 
 ## 8. Related decisions

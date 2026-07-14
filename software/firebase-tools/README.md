@@ -10,7 +10,7 @@ Installs the pinned [`firebase-tools`](https://github.com/firebase/firebase-tool
 ## What It Does
 
 1. Ensures **Node ≥ 20** — bootstraps `software/node/install.sh` if missing or too old.
-2. Ensures a **Java runtime** — bootstraps `software/java/install.sh` if missing (the Firestore emulator requires a JRE; the CLI itself doesn't).
+2. Ensures **Java ≥ 21** — bootstraps `software/java/install.sh` if missing or too old (the Firestore emulator requires it; the CLI itself doesn't; an existing 11/17 JRE is not enough).
 3. Installs/pins `firebase-tools` globally (fleet Node's prefix, binary at `/usr/local/bin/firebase`).
 
 So Mosyle only needs **this** script scoped to the group — Node and Java come along. (`software/node/` and `software/java/` stay independently deployable.)
