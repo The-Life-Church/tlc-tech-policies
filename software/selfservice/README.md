@@ -12,7 +12,7 @@ Wraps any fleet installer with a native progress window (via [swiftDialog](../di
 - **Exit code passes through** — Mosyle's success/failure indicator for the Self-Service item reflects the real installer result.
 - **Failure UX:** friendly message, the kept log path, and a pointer to staff.thelifechurch.com — no more silent failures.
 - **Allowlist only:** the wrapper maps known tool slugs to repo paths and refuses anything else.
-- Progress bar advances per step line (capped at 90% until actually done — it never fakes completion). Command files live at `/var/tmp/tlc-dialog-<tool>.cmd`, truncated per run.
+- Progress bar advances per step line (capped at 90% until actually done — it never fakes completion). Command files live in fresh root-owned `mktemp` dirs under `/var/tmp/tlc-dialog.*` (unpredictable paths — a fixed name in a world-writable dir would be symlink-attackable); each run sweeps the previous ones.
 
 ## Self-Service catalog blocks
 
@@ -36,4 +36,6 @@ The per-tool Self-Service blocks are also in each tool's README next to its sile
 3. Run the same wrapped item via a scheduled push with **nobody logged in** → fully silent, installer still runs.
 4. Machine without swiftDialog → first Self-Service click bootstraps it, then proceeds.
 
-Root-launched dialogs rendering in the user's session (`launchctl asuser` + `sudo -u`) is the one platform-sensitive piece — verify on the current macOS before scoping widely.
+5. Run the dialog installer twice → second run logs "already installed. Nothing to do." (verifies the `dialog --version` format matches the exact version.build check).
+
+Root-launched dialogs rendering in the user's session (`launchctl asuser` + `sudo -u`) is the one platform-sensitive piece — verify on the current macOS before scoping widely. **swiftDialog 3.x requires macOS 15+** — on older Macs the bootstrap fails by design and installs run silently.

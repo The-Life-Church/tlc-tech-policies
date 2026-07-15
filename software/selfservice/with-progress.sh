@@ -102,10 +102,21 @@ fi
 [ "$UI" = "yes" ] && [ ! -x "$DIALOG_BIN" ] && UI="no"
 
 # --- Launch the dialog (as the console user, so it renders in their session) ---
-CMD_FILE="/var/tmp/tlc-dialog-${TOOL}.cmd"
+# The command file must be root-created at an UNPREDICTABLE path: a fixed name
+# in world-writable /var/tmp could be pre-created by a local user as a symlink,
+# and a root-side truncate/chmod would then follow it into root-owned files.
+# mktemp -d gives a fresh root-owned dir (contents writable only by root);
+# 755/644 lets the console user's dialog process read it. Old dirs are swept
+# here (rm on a planted symlink removes the link, never the target) — the dir
+# outlives the script on purpose, since the dialog polls it until dismissed.
+CMD_FILE=""
 dlg() { [ "$UI" = "yes" ] && echo "$1" >> "$CMD_FILE" || true; }
 
 if [ "$UI" = "yes" ]; then
+    rm -rf /var/tmp/tlc-dialog.* 2>/dev/null || true
+    CMD_DIR=$(mktemp -d /var/tmp/tlc-dialog.XXXXXX)
+    chmod 755 "$CMD_DIR"
+    CMD_FILE="${CMD_DIR}/dialog.cmd"
     : > "$CMD_FILE"
     chmod 644 "$CMD_FILE"
     CONSOLE_UID=$(id -u "$CONSOLE_USER")

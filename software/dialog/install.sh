@@ -66,21 +66,30 @@ BIN="/usr/local/bin/dialog"
 
 log "Starting on ${HOSTNAME} (${SERIAL}). Pin: ${DIALOG_VERSION} build ${DIALOG_BUILD}."
 
-# --- Idempotency: pinned version already installed? ---
-# `dialog --version` prints the version (e.g. 3.0.1.4955); prefix-match on the
-# version part so a formatting change degrades to a harmless reinstall.
+# --- Guard: swiftDialog 3.x requires macOS 15+ (upstream: use v2.5.6 below that) ---
+# On older Macs this exits non-zero so Mosyle shows the gap; the Self-Service
+# wrapper treats the failed bootstrap as "no UI" and installs silently — the
+# designed degradation. If a macOS 13/14 cohort ever matters, pin v2.5.6 in a
+# separate legacy path rather than loosening this pin.
+OS_MAJOR=$(sw_vers -productVersion | cut -d. -f1)
+if [ "$OS_MAJOR" -lt 15 ]; then
+    log "ERROR: macOS ${OS_MAJOR} detected — swiftDialog ${DIALOG_VERSION} requires macOS 15+. Self-Service items will run silently on this Mac."
+    exit 1
+fi
+
+# --- Idempotency: exact pinned version+build already installed? ---
+# `dialog --version` prints version.build (e.g. 3.0.1.4955). Exact match so a
+# build-only respin (or a stale older build) still converges — a bare version
+# prefix would also wrongly match e.g. 3.0.10. If the output format ever
+# changes, this degrades to reinstall-per-run: verify the no-op on a test Mac.
 if [ -x "$BIN" ]; then
     INSTALLED=$("$BIN" --version 2>/dev/null | tr -d '[:space:]' || echo "")
-    case "$INSTALLED" in
-        "${DIALOG_VERSION}"*)
-            log "swiftDialog ${INSTALLED} already installed. Nothing to do."
-            rm -f "$LOG_FILE"
-            exit 0
-            ;;
-        *)
-            log "swiftDialog '${INSTALLED:-none}' found; pinned ${DIALOG_VERSION}. Reinstalling."
-            ;;
-    esac
+    if [ "$INSTALLED" = "${DIALOG_VERSION}.${DIALOG_BUILD}" ]; then
+        log "swiftDialog ${INSTALLED} already installed. Nothing to do."
+        rm -f "$LOG_FILE"
+        exit 0
+    fi
+    log "swiftDialog '${INSTALLED:-none}' found; pinned ${DIALOG_VERSION}.${DIALOG_BUILD}. Reinstalling."
 fi
 
 PKG_NAME="dialog-${DIALOG_VERSION}-${DIALOG_BUILD}.pkg"
