@@ -2,13 +2,10 @@
 
 # The Life Church — Staff Dock Bootstrap
 #
-# ===== What to put in Mosyle =================================================
-#   Mosyle -> Scripts (Custom Command) -> new shell script
-#     Name:   TLC Staff Dock — seed
-#     Run:    Once     As: root     Scope: provisioning group (all staff Macs)
-#     Script:
-#       #!/bin/bash
-#       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/hardware/dock/install-staff-dock.sh | bash
+# ===== Mosyle ================================================================
+#   Paste-ready block: this folder's README.
+#   Name: TLC Staff Dock — seed · root · ONE-TIME · scope: provisioning (new-enrollment) group
+#   Installs: pinned dockutil + seeds the 13-app staff Dock (self-cleaning LaunchDaemon retries until apps land)
 # =============================================================================
 #
 # Replaces the old .pkg installer. Pulls the runtime scripts + LaunchDaemon from

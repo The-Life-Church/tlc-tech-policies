@@ -46,6 +46,9 @@ Mosyle → **Custom Scripts → Add Script**
 **Paste into Mosyle's Custom Script box** (the shebang is required — Mosyle writes the body to a file and executes it):
 ```bash
 #!/bin/bash
+# TLC Xcode Command Line Tools — Silent Install
+# Installs: Xcode Command Line Tools (git etc.) only — self-heals CLT broken by macOS upgrades
+# root · once or recurring · scope: anyone needing git (vibe coders, devs, Claude Code desktop app)
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/xcode/install-clt.sh" | bash
 ```
 

@@ -2,14 +2,11 @@
 
 # The Life Church — Claude Code Silent Install (per-user)
 #
-# ===== What to put in Mosyle =================================================
-#   Mosyle -> Scripts (Custom Command) -> new shell script
-#     Name:   TLC Claude Code — Silent Install
-#     Run:    Recurring     As: root (script drops to console user)
-#     Scope:  Claude Code users (same group that receives the managed policy)
-#     Script:
-#       #!/bin/bash
-#       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/claude/install-claude-code.sh | bash
+# ===== Mosyle ================================================================
+#   Paste-ready block: this folder's README.
+#   Name: TLC Claude Code — Silent Install · root (drops to console user) · recurring
+#   Scope: Claude Code users (same group as the managed policy)
+#   Installs: Claude Code CLI for the console user (native installer, self-updates; no pin) — nothing else
 # =============================================================================
 #
 # Claude Code's native installer is PER-USER (installs into the user's

@@ -2,14 +2,11 @@
 
 # The Life Church — Claude Code Status Line Install (per-user)
 #
-# ===== What to put in Mosyle =================================================
-#   Mosyle -> Scripts (Custom Command) -> new shell script
-#     Name:   TLC Claude Code Status Line — Install
-#     Run:    Recurring     As: root (script drops to console user)
-#     Scope:  Node-bearing Claude Code users (the status line runs `node`)
-#     Script:
-#       #!/bin/bash
-#       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/claude/statusline/install.sh | bash
+# ===== Mosyle ================================================================
+#   Paste-ready block: this folder's README.
+#   Name: TLC Claude Code Status Line — Install · root (drops to console user) · recurring
+#   Scope: Node-bearing Claude Code users (the status line runs node)
+#   Installs: the custom status line into the console user's ~/.claude — nothing else
 # =============================================================================
 #
 # Places statusline.js at ~/.claude/statusline.js for the logged-in console

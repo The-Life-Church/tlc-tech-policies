@@ -2,19 +2,12 @@
 
 # The Life Church — Xcode Command Line Tools Silent Install
 #
-# ===== What to put in Mosyle =================================================
-#   Mosyle -> Scripts (Custom Command) -> new shell script
-#     Name:   TLC Xcode Command Line Tools — Silent Install
-#     Run:    Once or recurring     As: root     Scope: any group needing git — vibe
-#             coders, devs, and anyone receiving the Claude Code desktop app (it
-#             hard-gates on git)
-#     Script:
-#       #!/bin/bash
-#       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/xcode/install-clt.sh | bash
-#
-#   Note: macOS major upgrades leave CLT present but broken. If scheduled "once",
-#   re-run this on the fleet after each major OS upgrade. The health check below
-#   makes recurring runs nearly free (healthy machines exit 0 in under a second).
+# ===== Mosyle ================================================================
+#   Paste-ready block: this folder's README.
+#   Name: TLC Xcode Command Line Tools — Silent Install · root · once or recurring
+#   Scope: anyone needing git — vibe coders, devs, Claude Code desktop app users
+#   Installs: Xcode Command Line Tools (git etc.) only; self-heals CLT broken by
+#   macOS major upgrades (healthy machines exit 0 in under a second)
 # =============================================================================
 #
 # Failures are captured in the log file and reflected in the exit code:

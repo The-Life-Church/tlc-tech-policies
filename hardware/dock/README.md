@@ -81,7 +81,10 @@ installs `/usr/local/bin/dockutil`) — not vendored here. The version is pinned
 **Mosyle → Custom Scripts → paste, scope to the provisioning (new-enrollment) group, run ONE-TIME:**
 
 ```bash
-# TLC Staff Dock — bootstrap (run as root, one-time)
+#!/bin/bash
+# TLC Staff Dock — seed
+# Installs: pinned dockutil + seeds the 13-app staff Dock (self-cleaning LaunchDaemon retries until apps land)
+# root · ONE-TIME · scope: provisioning (new-enrollment) group
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/hardware/dock/install-staff-dock.sh" | bash
 ```
 
@@ -96,7 +99,10 @@ adding Gemini to a Mac that **didn't** go through enrollment — e.g. an existin
 the destructive wipe. Deploy it as its own Mosyle Custom Script scoped to those Macs:
 
 ```bash
-# TLC — add Gemini to this user's Dock (run as root, one-time, scoped group)
+#!/bin/bash
+# TLC Dock — add Gemini (existing Macs)
+# Does: adds Gemini to the current user's Dock, non-destructive — installs nothing
+# root · one-time · scope: existing Macs that didn't run enrollment
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/hardware/dock/add-gemini-to-dock.sh" | bash
 ```
 

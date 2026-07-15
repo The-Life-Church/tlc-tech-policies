@@ -2,13 +2,11 @@
 
 # The Life Church — Homebrew Silent Install
 #
-# ===== What to put in Mosyle =================================================
-#   Mosyle -> Scripts (Custom Command) -> new shell script
-#     Name:   TLC Homebrew — Silent Install
-#     Run:    Once or recurring     As: root (script drops to console user)     Scope: vibe coders / IT-dev (after CLT)
-#     Script:
-#       #!/bin/bash
-#       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/homebrew/install.sh | bash
+# ===== Mosyle ================================================================
+#   Paste-ready block: this folder's README.
+#   Name: TLC Homebrew — Silent Install · root (drops to console user) · once or recurring
+#   Scope: IT-dev only (after CLT) — NOT the standard chain
+#   Installs: Homebrew for the console user (always-latest, self-updating; no pin) — nothing else
 # =============================================================================
 #
 # Homebrew refuses to install as root, so this script detects the active console

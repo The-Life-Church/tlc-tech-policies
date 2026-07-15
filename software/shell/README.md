@@ -51,6 +51,9 @@ Mosyle → **Custom Scripts → Add Script** — one per group.
 **Paste into Mosyle's Custom Script box** (shebang required — Mosyle writes the body to a file and executes it):
 ```bash
 #!/bin/bash
+# TLC Shell Policy — Vibe Coders
+# Does: deploys the selective Terminal policy (blocks sudo/installs/package runners; restores + npm run OK) — installs no tools
+# root · recurring · scope: vibe coder device group
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/shell/deploy-shell-policy-vibe-coders.sh" | bash
 ```
 
@@ -62,6 +65,9 @@ curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/
 **Paste into Mosyle's Custom Script box** (shebang required — Mosyle writes the body to a file and executes it):
 ```bash
 #!/bin/bash
+# TLC Shell Policy — Default
+# Does: deploys the full-block Terminal policy for general staff — installs no tools
+# root · recurring · scope: default device group
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/shell/deploy-shell-policy-default.sh" | bash
 ```
 

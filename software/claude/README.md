@@ -113,6 +113,10 @@ Mosyle → **Custom Scripts → Add Script**
 **Paste into Mosyle's Custom Script box** (shebang required — Mosyle writes the body to a file and executes it):
 ```bash
 #!/bin/zsh
+# TLC Claude Code Policy — fleet CLAUDE.md
+# Does: fetches the behavioral policy to /etc/claude-code/CLAUDE.md — installs no tools
+# (deploy-claude-policy.sh is the fuller variant: also wires the @import into ~/.claude/CLAUDE.md)
+# root · recurring daily · scope: all Claude Code Macs
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/claude/CLAUDE.md" -o /etc/claude-code/CLAUDE.md
 ```
 
@@ -128,11 +132,15 @@ cat /etc/claude-code/CLAUDE.md
 
 ### Managed Settings (`managed-settings.json`)
 
-Mosyle → **Custom Scripts → Add Script**
-- Run as: `root`
-- Schedule: Daily
-- Scope: Default group
-- Upload `deploy-managed-settings.sh`
+Mosyle → **Custom Scripts → Add Script** — paste:
+
+```bash
+#!/bin/bash
+# TLC Claude Code Managed Settings
+# Does: fetches managed-settings.json (deny rules + force-enabled plugins) to /Library/Application Support/ClaudeCode/ — installs no tools
+# root · recurring daily · scope: all Claude Code Macs
+curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/claude/deploy-managed-settings.sh" | bash
+```
 
 **Verify on a test Mac:**
 ```bash

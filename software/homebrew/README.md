@@ -51,6 +51,9 @@ Mosyle → **Custom Scripts → Add Script**
 **Paste into Mosyle's Custom Script box** (the shebang is required — Mosyle writes the body to a file and executes it):
 ```bash
 #!/bin/bash
+# TLC Homebrew — Silent Install
+# Installs: Homebrew for the console user (always-latest, self-updating; no pin) — nothing else
+# root (drops to console user) · once or recurring · scope: IT-dev only (after CLT)
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/homebrew/install.sh" | bash
 ```
 

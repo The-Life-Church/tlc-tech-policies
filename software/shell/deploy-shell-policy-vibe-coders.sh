@@ -2,13 +2,11 @@
 
 # The Life Church — Shell Policy Deployment (Vibe Coders)
 #
-# ===== What to put in Mosyle =================================================
-#   Mosyle -> Scripts (Custom Command) -> new shell script
-#     Name:   TLC Shell Policy — Vibe Coders
-#     Run:    Recurring     As: root     Scope: vibe coder device group
-#     Script:
-#       #!/bin/bash
-#       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/shell/deploy-shell-policy-vibe-coders.sh | bash
+# ===== Mosyle ================================================================
+#   Paste-ready block: this folder's README.
+#   Name: TLC Shell Policy — Vibe Coders · root · recurring · scope: vibe coder device group
+#   Does: deploys the selective Terminal policy (blocks sudo/installs/package runners;
+#   restores + npm run allowed) — installs no tools
 # =============================================================================
 
 POLICY_FILE="/etc/tlc-shell-policy.zsh"

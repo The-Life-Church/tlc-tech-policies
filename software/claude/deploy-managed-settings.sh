@@ -2,13 +2,11 @@
 
 # The Life Church — Claude Code Managed Settings Deployment
 #
-# ===== What to put in Mosyle =================================================
-#   Mosyle -> Scripts (Custom Command) -> new shell script
-#     Name:   TLC Claude Code Managed Settings
-#     Run:    Recurring daily     As: root     Scope: all Claude Code Macs
-#     Script:
-#       #!/bin/bash
-#       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/claude/deploy-managed-settings.sh | bash
+# ===== Mosyle ================================================================
+#   Paste-ready block: this folder's README.
+#   Name: TLC Claude Code Managed Settings · root · recurring daily · scope: all Claude Code Macs
+#   Does: fetches managed-settings.json (deny rules + force-enabled plugins) to
+#   /Library/Application Support/ClaudeCode/ — installs no tools
 # =============================================================================
 #
 # Pulls managed-settings.json from main into /Library/Application Support/ClaudeCode/:

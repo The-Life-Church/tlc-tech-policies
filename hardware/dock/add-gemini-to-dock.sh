@@ -2,13 +2,10 @@
 
 # The Life Church — add Google Gemini to a user's Dock (standalone)
 #
-# ===== What to put in Mosyle =================================================
-#   Mosyle -> Scripts (Custom Command) -> new shell script
-#     Name:   TLC Dock — add Gemini (existing Macs)
-#     Run:    Once     As: root     Scope: existing Macs that didn't run enrollment
-#     Script:
-#       #!/bin/bash
-#       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/hardware/dock/add-gemini-to-dock.sh | bash
+# ===== Mosyle ================================================================
+#   Paste-ready block: this folder's README.
+#   Name: TLC Dock — add Gemini (existing Macs) · root · one-time · scope: existing Macs that didn't run enrollment
+#   Does: adds Gemini to the current user's Dock, non-destructive — installs nothing
 # =============================================================================
 #
 # New enrollments already get Gemini via the staff-dock seeder (slot 2). This is for

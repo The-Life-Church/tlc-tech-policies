@@ -40,6 +40,14 @@ Scripts → Custom Command, run **as the logged-in user** (so `$HOME` resolves),
 scoped to dev / vibe-coder Macs. Mosyle surfaces the non-zero exit so a `2`
 flags the machine for follow-up.
 
+```bash
+#!/bin/bash
+# TLC Security — Mini Shai-Hulud Scan
+# Does: read-only scan for Shai-Hulud npm-worm indicators — installs nothing (exit 2 = findings)
+# run as LOGGED-IN USER ($HOME must resolve) · on-demand or recurring · scope: dev / vibe-coder Macs
+curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/security/scan-shai-hulud.sh" | bash
+```
+
 ### ⚠️ If it flags the ransom token
 
 **Do not revoke it.** Revoking the `IfYouRevokeThisToken…` npm token is the

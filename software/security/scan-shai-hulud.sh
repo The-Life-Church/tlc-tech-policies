@@ -15,13 +15,11 @@
 # IOC source:
 #   https://www.stepsecurity.io/blog/mini-shai-hulud-is-back-a-self-spreading-supply-chain-attack-hits-the-npm-ecosystem
 #
-# ===== What to put in Mosyle =================================================
-#   Mosyle -> Scripts (Custom Command) -> new shell script
-#     Name:   TLC Security — Mini Shai-Hulud Scan
-#     Run:    On-demand or recurring   As: user (so $HOME resolves)   Scope: dev/vibe-coder Macs
-#     Script:
-#       #!/bin/bash
-#       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/security/scan-shai-hulud.sh | bash
+# ===== Mosyle ================================================================
+#   Paste-ready block: this folder's README.
+#   Name: TLC Security — Mini Shai-Hulud Scan · run as LOGGED-IN USER ($HOME must resolve)
+#   On-demand or recurring · scope: dev / vibe-coder Macs
+#   Does: read-only scan for Shai-Hulud npm-worm indicators — installs nothing (exit 2 = findings)
 # =============================================================================
 #
 # Usage (local):
