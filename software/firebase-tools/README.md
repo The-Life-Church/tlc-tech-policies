@@ -35,6 +35,15 @@ So Mosyle only needs **this** script scoped to the group — Node, Java, and gh 
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/firebase-tools/install.sh" | bash
 ```
 
+**Self-Service catalog item (with progress window)** — background/recurring entries keep the silent block above; see [`software/selfservice/`](../selfservice/README.md):
+```bash
+#!/bin/bash
+# TLC Self-Service — Firebase Tools (with progress window)
+# Runs the same installer with a swiftDialog progress UI — Self-Service items ONLY.
+# root · Self-Service · scope: vibe coders / IT-dev
+curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/selfservice/with-progress.sh" | bash -s -- firebase-tools "Firebase Tools"
+```
+
 ## Exit codes
 
 | Code | Meaning |

@@ -88,6 +88,15 @@ installs `/usr/local/bin/dockutil`) — not vendored here. The version is pinned
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/hardware/dock/install-staff-dock.sh" | bash
 ```
 
+**Self-Service catalog item (with progress window)** — background/recurring entries keep the silent block above; see [`software/selfservice/`](../selfservice/README.md):
+```bash
+#!/bin/bash
+# TLC Self-Service — Staff Dock (with progress window)
+# Runs the same installer with a swiftDialog progress UI — Self-Service items ONLY.
+# root · Self-Service · scope: provisioning / on-request
+curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/selfservice/with-progress.sh" | bash -s -- staff-dock "Staff Dock"
+```
+
 Run it **one-time**, not recurring — the LaunchDaemon owns the retry loop. Re-running the
 bootstrap on an **already-seeded** Mac is safe (it tops up missing apps, won't re-wipe) —
 but that safety comes from the marker, which a brand-new target won't have (see warning above).

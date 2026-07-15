@@ -27,6 +27,8 @@ tlc-tech-policies/
 │   ├── firebase/     ← Firebase runbook — project model, IAM bundles, deploy paths (docs, no installer)
 │   ├── firebase-tools/ ← Firebase CLI silent installer (npm global, pinned; CLI + emulators + MCP; bootstraps Node + Java + gh)
 │   ├── java/         ← Temurin JRE silent installer (pinned pkg + per-arch SHAs; Firestore emulator runtime)
+│   ├── dialog/       ← swiftDialog silent installer (pinned pkg + SHA + signature; Self-Service progress UI)
+│   ├── selfservice/  ← Progress wrapper for Mosyle Self-Service items (swiftDialog window around any installer)
 │   ├── security/     ← Ad-hoc read-only threat scans (Shai-Hulud npm worm scanner)
 │   └── chrome/       ← Chrome managed prefs: force-install Google PWAs (Mosyle Per-App Config)
 └── hardware/
@@ -70,6 +72,8 @@ Skills live in the private companion repo because the Claude.ai admin console on
 | [`software/firebase`](./software/firebase/README.md) | Firebase runbook (docs, no installer) — two-tier project rule, builder IAM bundles, deploy paths (auto-rollouts / WIF Actions / no manual), app onboarding checklist | IT reference |
 | [`software/firebase-tools`](./software/firebase-tools/README.md) | Firebase CLI (npm global, pinned) — CLI + emulator suite + MCP server in one binary; bootstraps Node, Java, and gh — one Mosyle script stands up the whole vibe-coder chain | Vibe coders / IT-dev opt-in, recurring |
 | [`software/java`](./software/java/README.md) | Temurin JRE from official Adoptium pkg — pinned version + build + per-arch SHAs; required by the Firestore emulator. Bootstrapped by firebase-tools; independently deployable | Firebase-emulator hosts |
+| [`software/dialog`](./software/dialog/README.md) | swiftDialog — pinned pkg (SHA computed in CI + Developer ID signature check); native progress UI for Self-Service. Bootstrapped by the wrapper; independently deployable | Self-Service Macs |
+| [`software/selfservice`](./software/selfservice/README.md) | Progress wrapper for Self-Service catalog items — wraps any fleet installer in a swiftDialog window (live steps, ✓/⚠ ending). Background/recurring entries stay silent by design | Self-Service catalog only |
 | [`software/homebrew`](./software/homebrew/README.md) | Homebrew installer — **IT-dev only**, not in the standard chain | IT-dev |
 | [`software/security`](./software/security/README.md) | Ad-hoc read-only threat scans (Shai-Hulud npm worm scanner) | Node-bearing machines |
 | [`software/chrome`](./software/chrome/README.md) | Force-install Google PWAs via Chrome Enterprise Core | Top-level org |

@@ -14,7 +14,8 @@
 #     (the `hyperframes` and `firebase-tools` jobs; version pin only, no SHA)
 #   - a GitHub release that publishes NO checksums file — download each asset
 #     and hash it in-CI, because the matrix can only awk a published checksums
-#     file (the `ffmpeg` job)
+#     file (the `ffmpeg` and `dialog` jobs; dialog also parses a build number
+#     out of the asset filename)
 #   - the Adoptium API — version+build+per-arch pkg SHAs straight from the API,
 #     deliberately pinned to one LTS major (the `temurin` job)
 # Tools with no pin (e.g. Homebrew — always-latest installer, self-updating)
@@ -828,4 +829,127 @@ jobs:
           TEXT=$(printf '%s\n%s' \
             "<${RUN_URL}|Bump installer pins> · <${REPO_URL}|${REPO}>" \
             "❌ Temurin JRE job failed — <${RUN_URL}|run logs>")
+          jq -n --arg text "$TEXT" '{text: $text}' | curl -fsS -X POST -H 'Content-Type: application/json' -d @- "$WEBHOOK"
+
+  # ── swiftDialog: GitHub release, but the pkg asset embeds a build number the
+  # github-release matrix can't template (dialog-<ver>-<build>.pkg), and
+  # upstream publishes NO checksums file — so this dedicated job parses the
+  # build from the asset name and hashes the pkg in-CI (the ffmpeg pattern).
+  # releases/latest skips upstream's RC/beta prereleases automatically.
+  dialog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Check swiftDialog
+        id: bump
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          FILE="software/dialog/install.sh"
+          REPO="swiftDialog/swiftDialog"
+
+          CUR_VER=$(grep -m1 '^DIALOG_VERSION=' "$FILE" | cut -d'"' -f2)
+          CUR_BUILD=$(grep -m1 '^DIALOG_BUILD=' "$FILE" | cut -d'"' -f2)
+
+          RELEASE=$(gh api "repos/${REPO}/releases/latest")
+          TAG=$(echo "$RELEASE" | jq -r '.tag_name')
+          LATEST="${TAG#v}"
+          PUBLISHED=$(echo "$RELEASE" | jq -r '.published_at')
+          PKG_NAME=$(echo "$RELEASE" | jq -r '.assets[].name | select(endswith(".pkg"))')
+          LATEST_BUILD=$(echo "$PKG_NAME" | sed -E 's/^dialog-.*-([0-9]+)\.pkg$/\1/')
+          if [ -z "$PKG_NAME" ] || [ -z "$LATEST_BUILD" ] || [ "$PKG_NAME" = "$LATEST_BUILD" ]; then
+            echo "ERROR: could not parse the pkg asset name ('${PKG_NAME}')."
+            exit 1
+          fi
+
+          if [ "$LATEST" = "$CUR_VER" ] && [ "$LATEST_BUILD" = "$CUR_BUILD" ]; then
+            echo "swiftDialog pin is current (${CUR_VER}-${CUR_BUILD}). Nothing to do."
+            exit 0
+          fi
+
+          AGE_DAYS=$(( ( $(date +%s) - $(date -d "$PUBLISHED" +%s) ) / 86400 ))
+          if [ "$IGNORE_COOLDOWN" != "true" ] && [ "$AGE_DAYS" -lt "$COOLDOWN_DAYS" ]; then
+            echo "swiftDialog ${LATEST}-${LATEST_BUILD} is only ${AGE_DAYS}d old (< ${COOLDOWN_DAYS}d cooldown). Skipping until it ages."
+            exit 0
+          fi
+
+          BRANCH="chore/bump-dialog-${LATEST}-${LATEST_BUILD}"
+          if git ls-remote --exit-code origin "refs/heads/${BRANCH}" >/dev/null 2>&1; then
+            echo "Branch ${BRANCH} already exists — PR presumably open. Skipping."
+            exit 0
+          fi
+
+          # No upstream checksums file — download the pkg and hash it here.
+          SHA=$(curl -fsSL "https://github.com/${REPO}/releases/download/${TAG}/${PKG_NAME}" | sha256sum | awk '{print $1}')
+          if [ -z "$SHA" ]; then
+            echo "ERROR: failed to compute the pkg SHA."
+            exit 1
+          fi
+
+          git checkout -b "$BRANCH"
+          sed -i "s|^DIALOG_VERSION=\".*\"|DIALOG_VERSION=\"${LATEST}\"|" "$FILE"
+          sed -i "s|^DIALOG_BUILD=\".*\"|DIALOG_BUILD=\"${LATEST_BUILD}\"|" "$FILE"
+          sed -i "s|^DIALOG_SHA256=\".*\"|DIALOG_SHA256=\"${SHA}\"|" "$FILE"
+          git add "$FILE"
+          git commit -m "Bump swiftDialog pin: ${CUR_VER}-${CUR_BUILD} -> ${LATEST}-${LATEST_BUILD}"
+          git push origin "$BRANCH"
+
+          PR_URL=$(gh pr create \
+            --title "Bump swiftDialog pin: ${CUR_VER}-${CUR_BUILD} -> ${LATEST}-${LATEST_BUILD}" \
+            --body "$(cat <<EOF
+          Automated pin bump from the \`bump-pins\` workflow.
+
+          - **Version:** \`${CUR_VER}-${CUR_BUILD}\` -> \`${LATEST}-${LATEST_BUILD}\` (tag \`${TAG}\`)
+          - **Published:** ${PUBLISHED} (${AGE_DAYS} days old; cooldown ${COOLDOWN_DAYS}d, ignore_cooldown=${IGNORE_COOLDOWN})
+          - **SHA-256:** \`${SHA}\` (computed by downloading the asset in this run — upstream publishes no checksums file)
+          - **Release notes:** https://github.com/${REPO}/releases/tag/${TAG}
+
+          The installer also verifies the pkg's Developer ID signature (team PWA5E9TQ59) at install time.
+          Review checklist: release is real on ${REPO}; notes look sane.
+          On merge, devices converge on their next recurring run / next Self-Service bootstrap.
+          EOF
+          )")
+
+          {
+            echo "pr_url=${PR_URL}"
+            echo "old=${CUR_VER}-${CUR_BUILD}"
+            echo "new=${LATEST}-${LATEST_BUILD}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Notify Google Chat (bump PR opened)
+        if: ${{ steps.bump.outputs.pr_url != '' }}
+        env:
+          WEBHOOK: ${{ secrets.CHAT_WEBHOOK_URL }}
+          PR_URL: ${{ steps.bump.outputs.pr_url }}
+          OLD: ${{ steps.bump.outputs.old }}
+          NEW: ${{ steps.bump.outputs.new }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REPO: ${{ github.repository }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "CHAT_WEBHOOK_URL secret not set — skipping notify."; exit 0; fi
+          TEXT=$(printf '%s\n%s' \
+            "<${RUN_URL}|Bump installer pins> · <${REPO_URL}|${REPO}>" \
+            "✅ swiftDialog: ${OLD} -> ${NEW} — <${PR_URL}|review the PR>")
+          jq -n --arg text "$TEXT" '{text: $text}' | curl -fsS -X POST -H 'Content-Type: application/json' -d @- "$WEBHOOK"
+
+      - name: Notify Google Chat (job failed)
+        if: ${{ failure() }}
+        env:
+          WEBHOOK: ${{ secrets.CHAT_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REPO: ${{ github.repository }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "CHAT_WEBHOOK_URL secret not set — skipping notify."; exit 0; fi
+          TEXT=$(printf '%s\n%s' \
+            "<${RUN_URL}|Bump installer pins> · <${REPO_URL}|${REPO}>" \
+            "❌ swiftDialog job failed — <${RUN_URL}|run logs>")
           jq -n --arg text "$TEXT" '{text: $text}' | curl -fsS -X POST -H 'Content-Type: application/json' -d @- "$WEBHOOK"

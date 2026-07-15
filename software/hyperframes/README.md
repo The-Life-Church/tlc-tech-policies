@@ -74,6 +74,15 @@ Mosyle → **Custom Scripts → Add Script**
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/hyperframes/install.sh" | bash
 ```
 
+**Self-Service catalog item (with progress window)** — background/recurring entries keep the silent block above; see [`software/selfservice/`](../selfservice/README.md):
+```bash
+#!/bin/bash
+# TLC Self-Service — HyperFrames (with progress window)
+# Runs the same installer with a swiftDialog progress UI — Self-Service items ONLY.
+# root · Self-Service · scope: creative / IT-dev
+curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/selfservice/with-progress.sh" | bash -s -- hyperframes "HyperFrames"
+```
+
 **To test on your own Mac** — the install writes to the global npm prefix (needs root):
 ```bash
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/hyperframes/install.sh" | sudo bash
