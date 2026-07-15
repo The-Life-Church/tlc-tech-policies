@@ -53,6 +53,15 @@ Mosyle → **Custom Scripts → Add Script**
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/gh/install.sh" | bash
 ```
 
+**Self-Service catalog item (with progress window)** — background/recurring entries keep the silent block above; see [`software/selfservice/`](../selfservice/README.md):
+```bash
+#!/bin/bash
+# TLC Self-Service — GH CLI (with progress window)
+# Runs the same installer with a swiftDialog progress UI — Self-Service items ONLY.
+# root · Self-Service · scope: vibe coders / IT-dev
+curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/selfservice/with-progress.sh" | bash -s -- gh "GH CLI"
+```
+
 **To test on your own Mac** — open Terminal and paste the `curl` line with `sudo bash` (the pkg install needs root, which Mosyle has automatically; no shebang — zsh would try to run `#!/bin/bash` as a command):
 ```bash
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/gh/install.sh" | sudo bash
