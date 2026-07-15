@@ -112,17 +112,18 @@ Mosyle → **Custom Scripts → Add Script**
 
 **Paste into Mosyle's Custom Script box** (shebang required — Mosyle writes the body to a file and executes it):
 ```bash
-#!/bin/zsh
-# TLC Claude Code Policy — fleet CLAUDE.md
-# Does: fetches the behavioral policy to /etc/claude-code/CLAUDE.md — installs no tools
-# (deploy-claude-policy.sh is the fuller variant: also wires the @import into ~/.claude/CLAUDE.md)
+#!/bin/bash
+# TLC Claude Code Policy
+# Does: fetches the fleet CLAUDE.md to /etc/claude-code/ AND wires the @import into each
+# user's ~/.claude/CLAUDE.md (idempotent — always overwrites the policy, adds the import
+# line only once) — installs no tools
 # root · recurring daily · scope: all Claude Code Macs
-curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/claude/CLAUDE.md" -o /etc/claude-code/CLAUDE.md
+curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/claude/deploy-claude-policy.sh" | bash
 ```
 
-**To test on your own Mac** — open Terminal and paste just the `curl` line (drop the shebang — zsh will treat `#!/bin/zsh` as a command and error out). Writing to `/etc/` requires sudo:
+**To test on your own Mac** — open Terminal and pipe the script through `sudo bash` (it writes to `/etc/` and the console user's `~/.claude/`):
 ```bash
-sudo curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/claude/CLAUDE.md" -o /etc/claude-code/CLAUDE.md
+curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/claude/deploy-claude-policy.sh" | sudo bash
 ```
 
 **Verify:**
