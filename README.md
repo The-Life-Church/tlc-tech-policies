@@ -25,7 +25,7 @@ tlc-tech-policies/
 │   ├── hyperframes/  ← HyperFrames CLI silent installer (npm global, pinned; self-bootstraps Node + ffmpeg)
 │   ├── ffmpeg/       ← FFmpeg + ffprobe static binaries (pinned per-arch SHAs; encoder half of HyperFrames)
 │   ├── firebase/     ← Firebase runbook — project model, IAM bundles, deploy paths (docs, no installer)
-│   ├── firebase-tools/ ← Firebase CLI silent installer (npm global, pinned; CLI + emulators + MCP; bootstraps Node + Java)
+│   ├── firebase-tools/ ← Firebase CLI silent installer (npm global, pinned; CLI + emulators + MCP; bootstraps Node + Java + gh)
 │   ├── java/         ← Temurin JRE silent installer (pinned pkg + per-arch SHAs; Firestore emulator runtime)
 │   ├── security/     ← Ad-hoc read-only threat scans (Shai-Hulud npm worm scanner)
 │   └── chrome/       ← Chrome managed prefs: force-install Google PWAs (Mosyle Per-App Config)
@@ -68,7 +68,7 @@ Skills live in the private companion repo because the Claude.ai admin console on
 | [`software/hyperframes`](./software/hyperframes/README.md) | HyperFrames CLI ("write HTML, render video") — pinned npm global install; self-bootstraps Node + ffmpeg from this repo so one Mosyle script stands up the whole render chain | Creative team / IT-dev opt-in |
 | [`software/ffmpeg`](./software/ffmpeg/README.md) | FFmpeg + ffprobe static binaries — pinned per-arch SHAs are the only integrity check (upstream is unsigned). Encoder half of HyperFrames; independently deployable | Opt-in (HyperFrames hosts) |
 | [`software/firebase`](./software/firebase/README.md) | Firebase runbook (docs, no installer) — two-tier project rule, builder IAM bundles, deploy paths (auto-rollouts / WIF Actions / no manual), app onboarding checklist | IT reference |
-| [`software/firebase-tools`](./software/firebase-tools/README.md) | Firebase CLI (npm global, pinned) — CLI + emulator suite + MCP server in one binary; bootstraps Node + Java so one Mosyle script stands up the chain | Vibe coders / IT-dev opt-in, recurring |
+| [`software/firebase-tools`](./software/firebase-tools/README.md) | Firebase CLI (npm global, pinned) — CLI + emulator suite + MCP server in one binary; bootstraps Node, Java, and gh — one Mosyle script stands up the whole vibe-coder chain | Vibe coders / IT-dev opt-in, recurring |
 | [`software/java`](./software/java/README.md) | Temurin JRE from official Adoptium pkg — pinned version + build + per-arch SHAs; required by the Firestore emulator. Bootstrapped by firebase-tools; independently deployable | Firebase-emulator hosts |
 | [`software/homebrew`](./software/homebrew/README.md) | Homebrew installer — **IT-dev only**, not in the standard chain | IT-dev |
 | [`software/security`](./software/security/README.md) | Ad-hoc read-only threat scans (Shai-Hulud npm worm scanner) | Node-bearing machines |

@@ -28,11 +28,14 @@
 # npm registry (no per-arch SHA). Bump via the firebase-tools job in
 # bump-pins.yml (14-day cooldown).
 #
-# This one script stands up the whole chain, in order:
+# This one script stands up the whole vibe-coder chain, in order:
 #   1. ensures Node >= 20 — bootstraps software/node/install.sh if missing/old
-#   2. ensures a Java runtime — bootstraps software/java/install.sh if missing
-#      (the Firestore emulator requires a JRE; CLI itself does not)
-#   3. installs/pins `firebase-tools` globally (fleet Node's prefix)
+#   2. ensures Java >= 21 — bootstraps software/java/install.sh if missing/old
+#      (the Firestore emulator requires it; the CLI itself does not)
+#   3. ensures the GitHub CLI — bootstraps software/gh/install.sh if missing.
+#      Not a firebase need — gh is how builders clone org repos and reach the
+#      private plugin marketplace, and this script is the one-stop chain.
+#   4. installs/pins `firebase-tools` globally (fleet Node's prefix)
 #
 # Notes:
 #   - Emulator JARs download per-user on first `firebase emulators:start`
@@ -41,10 +44,11 @@
 #     updates — no wrapper needed (unlike hyperframes).
 #   - No auth ships here. Builders are never logged in (`firebase login` is an
 #     IT thing); emulators run against `demo-*` projects with no login at all.
+#     gh auth is likewise per-user and IT-assisted, not this script's job.
 #
 # Exit codes:
-#   0 — firebase-tools present at the pinned version; Node + Java satisfied
-#   1 — install failure, or a prerequisite bootstrap (Node or Java) failed
+#   0 — firebase-tools present at the pinned version; Node + Java + gh satisfied
+#   1 — install failure, or a prerequisite bootstrap (Node, Java, or gh) failed
 
 set -euo pipefail
 
@@ -59,10 +63,11 @@ NODE_MIN_MAJOR="20"
 # Java >= 21 — an older JRE passes a naive presence check but fails at
 # `emulators:start`).
 JAVA_MIN_MAJOR="21"
-# Prerequisites — bootstrapped from this repo's own pinned installers if
-# missing (same raw URLs Mosyle uses; each target is idempotent).
+# Prerequisites/companions — bootstrapped from this repo's own pinned
+# installers if missing (same raw URLs Mosyle uses; each target is idempotent).
 NODE_INSTALLER_URL="https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/node/install.sh"
 JAVA_INSTALLER_URL="https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/java/install.sh"
+GH_INSTALLER_URL="https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/gh/install.sh"
 # ------------------------------------------------------------------------------
 
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
@@ -146,6 +151,21 @@ if ! /usr/libexec/java_home -v "${JAVA_MIN_MAJOR}+" >/dev/null 2>&1; then
 fi
 log "Java OK: $(/usr/libexec/java_home -v "${JAVA_MIN_MAJOR}+" 2>/dev/null)."
 
+# --- Ensure the GitHub CLI (bootstrap software/gh if missing) ---
+# Not a firebase prerequisite — gh is how builders clone org repos and reach
+# the private plugin marketplace, and this script is the one-stop chain for
+# vibe-coder machines. Presence-only check: gh's own recurring Mosyle script
+# remains the pin-convergence path; this just heals machines missing it.
+if ! command -v gh >/dev/null 2>&1; then
+    log "GitHub CLI not found — bootstrapping the pinned fleet gh..."
+    bootstrap_from_repo gh "$GH_INSTALLER_URL" || exit 1
+fi
+if ! command -v gh >/dev/null 2>&1; then
+    log "ERROR: gh still not found after bootstrap."
+    exit 1
+fi
+log "gh OK: $(command -v gh)."
+
 installed_version() {
     [ -f "${PKG_DIR}/package.json" ] || { echo ""; return; }
     node -p "require('${PKG_DIR}/package.json').version" 2>/dev/null || echo ""
@@ -179,6 +199,6 @@ if ! timeout 60 "$BIN" --version >/dev/null 2>&1; then
     exit 1
 fi
 
-log "Firebase toolchain ready: firebase-tools ${FIREBASE_TOOLS_VERSION}, Node $(node -v), Java present."
+log "Firebase toolchain ready: firebase-tools ${FIREBASE_TOOLS_VERSION}, Node $(node -v), Java present, gh present."
 rm -f "$LOG_FILE"
 exit 0
