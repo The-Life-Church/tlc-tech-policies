@@ -61,6 +61,15 @@ Mosyle → **Custom Scripts → Add Script**
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/ffmpeg/install.sh" | bash
 ```
 
+**Self-Service catalog item (with progress window)** — background/recurring entries keep the silent block above; see [`software/selfservice/`](../selfservice/README.md):
+```bash
+#!/bin/bash
+# TLC Self-Service — FFmpeg (with progress window)
+# Runs the same installer with a swiftDialog progress UI — Self-Service items ONLY.
+# root · Self-Service · scope: creative / IT-dev
+curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/selfservice/with-progress.sh" | bash -s -- ffmpeg "FFmpeg"
+```
+
 **To test on your own Mac** — the install writes to `/usr/local/bin`, which needs root; pipe to `sudo bash` (no shebang — zsh would try to run `#!/bin/bash` as a command):
 ```bash
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/ffmpeg/install.sh" | sudo bash
