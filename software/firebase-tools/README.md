@@ -11,7 +11,7 @@ Installs the pinned [`firebase-tools`](https://github.com/firebase/firebase-tool
 
 1. Ensures **Node ≥ 20** — bootstraps `software/node/install.sh` if missing or too old.
 2. Ensures **Java ≥ 21** — bootstraps `software/java/install.sh` if missing or too old (the Firestore emulator requires it; the CLI itself doesn't; an existing 11/17 JRE is not enough).
-3. Ensures the **GitHub CLI** — bootstraps `software/gh/install.sh` if missing. Not a firebase need — gh is how builders clone org repos and reach the private plugin marketplace; presence-only heal (gh's own recurring script stays the pin-update path). Per-user `gh auth login` remains the IT-assisted first-time step.
+3. Converges the **GitHub CLI** — always runs `software/gh/install.sh` (version-idempotent; fast no-op at the pin). Not a firebase need — gh is how builders clone org repos and reach the private plugin marketplace — and running it unconditionally means **gh pin bumps reach machines that only get this script** (the standalone gh script is a manual-run deploy). Per-user `gh auth login` remains the IT-assisted first-time step.
 4. Installs/pins `firebase-tools` globally (fleet Node's prefix, binary at `/usr/local/bin/firebase`).
 
 So Mosyle only needs **this** script scoped to the group — Node, Java, and gh come along, making it the one-stop vibe-coder toolchain script. (`software/node/`, `software/java/`, and `software/gh/` stay independently deployable.)

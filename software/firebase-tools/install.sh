@@ -32,8 +32,9 @@
 #   1. ensures Node >= 20 — bootstraps software/node/install.sh if missing/old
 #   2. ensures Java >= 21 — bootstraps software/java/install.sh if missing/old
 #      (the Firestore emulator requires it; the CLI itself does not)
-#   3. ensures the GitHub CLI — bootstraps software/gh/install.sh if missing.
-#      Not a firebase need — gh is how builders clone org repos and reach the
+#   3. converges the GitHub CLI — always runs software/gh/install.sh (it is
+#      version-idempotent), so gh pin bumps reach these machines too. Not a
+#      firebase need — gh is how builders clone org repos and reach the
 #      private plugin marketplace, and this script is the one-stop chain.
 #   4. installs/pins `firebase-tools` globally (fleet Node's prefix)
 #
@@ -151,15 +152,13 @@ if ! /usr/libexec/java_home -v "${JAVA_MIN_MAJOR}+" >/dev/null 2>&1; then
 fi
 log "Java OK: $(/usr/libexec/java_home -v "${JAVA_MIN_MAJOR}+" 2>/dev/null)."
 
-# --- Ensure the GitHub CLI (bootstrap software/gh if missing) ---
+# --- Converge the GitHub CLI (always run the repo's pinned installer) ---
 # Not a firebase prerequisite — gh is how builders clone org repos and reach
 # the private plugin marketplace, and this script is the one-stop chain for
-# vibe-coder machines. Presence-only check: gh's own recurring Mosyle script
-# remains the pin-convergence path; this just heals machines missing it.
-if ! command -v gh >/dev/null 2>&1; then
-    log "GitHub CLI not found — bootstrapping the pinned fleet gh..."
-    bootstrap_from_repo gh "$GH_INSTALLER_URL" || exit 1
-fi
+# vibe-coder machines. Run unconditionally: the gh installer is version-
+# idempotent (fast no-op at the pin), so gh pin bumps also reach machines
+# that only run THIS script (the standalone gh script is a manual-run deploy).
+bootstrap_from_repo gh "$GH_INSTALLER_URL" || exit 1
 if ! command -v gh >/dev/null 2>&1; then
     log "ERROR: gh still not found after bootstrap."
     exit 1
