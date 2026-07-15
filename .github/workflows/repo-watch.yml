@@ -1,0 +1,87 @@
+# Repo-creation watch — posts to Google Chat when a new repository appears in
+# the The-Life-Church org. Exists because members can self-serve repo creation
+# (e.g. "Use this template" on tlc-app-template), and IT wants to know about
+# new repos without being the bottleneck that creates them.
+#
+# Token: the default GITHUB_TOKEN only sees this repo + public repos, so
+# private repos created by members would be MISSED. Set the ORG_WATCH_TOKEN
+# repo secret to a fine-grained PAT (resource owner: The-Life-Church,
+# All repositories, Repository permissions -> Metadata: read-only). Org-scoped
+# fine-grained PATs need approval in the org's GitHub settings — that's IT
+# self-approving here. Without the secret the workflow still runs on
+# GITHUB_TOKEN and logs the coverage gap loudly.
+#
+# Window: runs daily and reports repos created in the last 25 hours — the 1h
+# overlap means an edge-case duplicate is possible and a miss is not.
+#
+# Chat: CHAT_WEBHOOK_URL repo secret (same pattern as bump-pins). Unset ->
+# notify steps log and exit 0. Public repos are flagged loudly in the message
+# (member-created repos should essentially always be private).
+
+name: Repo-creation watch
+
+on:
+  schedule:
+    - cron: '5 13 * * *' # daily 13:05 UTC (~8:05 AM Memphis)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Find repos created in the last 25h
+        id: scan
+        env:
+          GH_TOKEN: ${{ secrets.ORG_WATCH_TOKEN || github.token }}
+          USING_FALLBACK: ${{ secrets.ORG_WATCH_TOKEN == '' && 'true' || 'false' }}
+        run: |
+          set -euo pipefail
+          if [ "$USING_FALLBACK" = "true" ]; then
+            echo "WARN: ORG_WATCH_TOKEN not set — GITHUB_TOKEN only sees public repos and this one; private member-created repos will be MISSED."
+          fi
+
+          CUTOFF=$(date -u -d '25 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+          NEW=$(gh api "orgs/The-Life-Church/repos?sort=created&direction=desc&per_page=50" \
+            | jq --arg cutoff "$CUTOFF" '[.[] | select(.created_at > $cutoff)]')
+
+          COUNT=$(echo "$NEW" | jq 'length')
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          if [ "$COUNT" -eq 0 ]; then
+            echo "No new repos in the window."
+            exit 0
+          fi
+
+          echo "$NEW" | jq -r '.[] | .name + " (" + (if .private then "private" else "PUBLIC" end) + ") " + .created_at'
+          LINES=$(echo "$NEW" | jq -r '.[] | "• <" + .html_url + "|" + .name + "> — " + (if .private then "private" else "⚠️ PUBLIC" end) + ", created " + .created_at')
+          {
+            echo "lines<<LINES_EOF"
+            echo "$LINES"
+            echo "LINES_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Notify Google Chat (new repos)
+        if: ${{ steps.scan.outputs.count != '' && steps.scan.outputs.count != '0' }}
+        env:
+          WEBHOOK: ${{ secrets.CHAT_WEBHOOK_URL }}
+          COUNT: ${{ steps.scan.outputs.count }}
+          LINES: ${{ steps.scan.outputs.lines }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "CHAT_WEBHOOK_URL secret not set — skipping notify."; exit 0; fi
+          TEXT=$(printf '%s\n%s' \
+            "🆕 <${RUN_URL}|Repo-creation watch>: ${COUNT} new repo(s) in The-Life-Church" \
+            "$LINES")
+          jq -n --arg text "$TEXT" '{text: $text}' | curl -fsS -X POST -H 'Content-Type: application/json' -d @- "$WEBHOOK"
+
+      - name: Notify Google Chat (job failed)
+        if: ${{ failure() }}
+        env:
+          WEBHOOK: ${{ secrets.CHAT_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "CHAT_WEBHOOK_URL secret not set — skipping notify."; exit 0; fi
+          TEXT="❌ Repo-creation watch failed — <${RUN_URL}|run logs>"
+          jq -n --arg text "$TEXT" '{text: $text}' | curl -fsS -X POST -H 'Content-Type: application/json' -d @- "$WEBHOOK"
