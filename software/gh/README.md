@@ -47,6 +47,9 @@ Mosyle → **Custom Scripts → Add Script**
 **Paste into Mosyle's Custom Script box** (the shebang is required — Mosyle writes the body to a file and executes it):
 ```bash
 #!/bin/bash
+# TLC GitHub CLI (gh) — Silent Install
+# Installs: GitHub CLI only (pinned; nothing else)
+# root · manual on pin bumps (or recurring) · scope: vibe coders / IT-dev
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/gh/install.sh" | bash
 ```
 

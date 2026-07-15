@@ -62,6 +62,9 @@ Mosyle → **Custom Scripts → Add Script**
 **Paste into Mosyle's Custom Script box** (the shebang is required — Mosyle writes the body to a file and executes it):
 ```bash
 #!/bin/bash
+# TLC Node.js — Silent Install
+# Installs: Node.js LTS (node + npm) only (pinned; nothing else)
+# root · recurring weekly · scope: only machines that need node tooling (NOT fleet-wide)
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/node/install.sh" | bash
 ```
 

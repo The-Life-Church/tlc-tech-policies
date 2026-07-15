@@ -2,13 +2,11 @@
 
 # The Life Church — FFmpeg (static) Silent Install
 #
-# ===== What to put in Mosyle =================================================
-#   Mosyle -> Scripts (Custom Command) -> new shell script
-#     Name:   TLC FFmpeg (static) — Silent Install
-#     Run:    Once or recurring     As: root     Scope: creative / IT-dev (opt-in)
-#     Script:
-#       #!/bin/bash
-#       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/ffmpeg/install.sh | bash
+# ===== Mosyle ================================================================
+#   Paste-ready block: this folder's README (Deployment/Mosyle section).
+#   Name: TLC FFmpeg (static) — Silent Install · root · once or recurring · scope: creative / IT-dev (opt-in)
+#   Installs: ffmpeg + ffprobe static binaries only (pinned per-arch SHAs)
+#   Note: usually arrives via the HyperFrames one-stop script instead
 # =============================================================================
 #
 # Installs pinned static `ffmpeg` + `ffprobe` binaries to /usr/local/bin — the

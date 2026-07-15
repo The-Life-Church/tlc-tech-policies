@@ -2,13 +2,11 @@
 
 # The Life Church — HyperFrames CLI Silent Install
 #
-# ===== What to put in Mosyle =================================================
-#   Mosyle -> Scripts (Custom Command) -> new shell script
-#     Name:   TLC HyperFrames CLI — Silent Install
-#     Run:    Once or recurring     As: root     Scope: creative / IT-dev (opt-in)
-#     Script:
-#       #!/bin/bash
-#       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/hyperframes/install.sh | bash
+# ===== Mosyle ================================================================
+#   Paste-ready block: this folder's README (Deployment/Mosyle section).
+#   Name: TLC HyperFrames CLI — Silent Install · root · recurring · scope: creative / IT-dev (opt-in)
+#   Installs: hyperframes CLI (pinned) + HyperFrames agent skills (per-user)
+#   Converges to fleet pins: Node.js, FFmpeg + ffprobe, GitHub CLI
 # =============================================================================
 #
 # Installs the HyperFrames CLI (npm package `hyperframes`) system-wide via the

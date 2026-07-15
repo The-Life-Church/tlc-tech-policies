@@ -2,13 +2,10 @@
 
 # The Life Church — Higgsfield CLI Silent Install
 #
-# ===== What to put in Mosyle =================================================
-#   Mosyle -> Scripts (Custom Command) -> new shell script
-#     Name:   TLC Higgsfield CLI — Silent Install
-#     Run:    Once or recurring     As: root     Scope: creative / IT-dev (opt-in)
-#     Script:
-#       #!/bin/bash
-#       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/higgsfield/install.sh | bash
+# ===== Mosyle ================================================================
+#   Paste-ready block: this folder's README (Deployment/Mosyle section).
+#   Name: TLC Higgsfield CLI — Silent Install · root · once or recurring · scope: creative / IT-dev (opt-in)
+#   Installs: Higgsfield CLI (higgsfield + higgs) only (pinned; nothing else)
 # =============================================================================
 #
 # Installs the Higgsfield CLI from the official GitHub release tarball — no

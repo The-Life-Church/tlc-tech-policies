@@ -56,6 +56,9 @@ Mosyle → **Custom Scripts → Add Script**
 **Paste into Mosyle's Custom Script box** (the shebang is required — Mosyle writes the body to a file and executes it):
 ```bash
 #!/bin/bash
+# TLC Higgsfield CLI — Silent Install
+# Installs: Higgsfield CLI (higgsfield + higgs) only (pinned; nothing else)
+# root · once or recurring · scope: creative / IT-dev (opt-in)
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/higgsfield/install.sh" | bash
 ```
 

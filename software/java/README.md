@@ -16,7 +16,11 @@ Installs a pinned [Eclipse Temurin](https://adoptium.net/) JRE (LTS major) syste
 
 ```bash
 #!/bin/bash
-curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/java/install.sh | bash
+# TLC Temurin JRE — Silent Install
+# Installs: Temurin Java (JRE) only — Firestore emulator runtime; other JVMs untouched
+# Usually arrives via the Firebase CLI script — deploy alone only when needed without it
+# root · once or recurring · scope: firebase-emulator hosts (opt-in)
+curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/java/install.sh" | bash
 ```
 
 ## Exit codes

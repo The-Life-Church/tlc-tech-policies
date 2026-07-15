@@ -28,7 +28,11 @@ So Mosyle only needs **this** script scoped to the group — Node, Java, and gh 
 
 ```bash
 #!/bin/bash
-curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/firebase-tools/install.sh | bash
+# TLC Firebase CLI — Silent Install
+# Installs: firebase-tools — firebase CLI + emulator suite + Firebase MCP server (pinned)
+# Also converges to fleet pins: Node.js, Temurin Java, GitHub CLI
+# root · recurring · scope: vibe coders / IT-dev (opt-in)
+curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/firebase-tools/install.sh" | bash
 ```
 
 ## Exit codes

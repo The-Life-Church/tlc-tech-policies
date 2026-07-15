@@ -2,13 +2,11 @@
 
 # The Life Church — Temurin JRE Silent Install
 #
-# ===== What to put in Mosyle =================================================
-#   Mosyle -> Scripts (Custom Command) -> new shell script
-#     Name:   TLC Temurin JRE — Silent Install
-#     Run:    Once or recurring     As: root     Scope: firebase-emulator hosts (opt-in)
-#     Script:
-#       #!/bin/bash
-#       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/java/install.sh | bash
+# ===== Mosyle ================================================================
+#   Paste-ready block: this folder's README (Deployment/Mosyle section).
+#   Name: TLC Temurin JRE — Silent Install · root · once or recurring · scope: firebase-emulator hosts (opt-in)
+#   Installs: Temurin Java (JRE) only — Firestore emulator runtime; other JVMs untouched
+#   Note: usually arrives via the Firebase CLI one-stop script instead
 # =============================================================================
 #
 # Installs the pinned Eclipse Temurin JRE (LTS major below) system-wide from

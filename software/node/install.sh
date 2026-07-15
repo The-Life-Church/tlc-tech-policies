@@ -2,15 +2,10 @@
 
 # The Life Church — Node.js Silent Install
 #
-# ===== What to put in Mosyle =================================================
-#   Mosyle -> Scripts (Custom Command) -> new shell script
-#     Name:   TLC Node.js — Silent Install
-#     Run:    Once or recurring     As: root     Scope: IT-dev / vibe coders
-#             (NOT fleet-wide — the Claude Code desktop app does not need Node;
-#             only machines running node tooling or npx do)
-#     Script:
-#       #!/bin/bash
-#       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/node/install.sh | bash
+# ===== Mosyle ================================================================
+#   Paste-ready block: this folder's README (Deployment/Mosyle section).
+#   Name: TLC Node.js — Silent Install · root · recurring weekly · scope: only machines needing node tooling (NOT fleet-wide)
+#   Installs: Node.js LTS (node + npm) only (pinned; nothing else)
 # =============================================================================
 #
 # Installs the official Node.js LTS universal .pkg (arm64 + x64) from

@@ -2,13 +2,11 @@
 
 # The Life Church — Firebase CLI (firebase-tools) Silent Install
 #
-# ===== What to put in Mosyle =================================================
-#   Mosyle -> Scripts (Custom Command) -> new shell script
-#     Name:   TLC Firebase CLI — Silent Install
-#     Run:    Recurring     As: root     Scope: vibe coders / IT-dev (opt-in)
-#     Script:
-#       #!/bin/bash
-#       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/firebase-tools/install.sh | bash
+# ===== Mosyle ================================================================
+#   Paste-ready block: this folder's README (Deployment/Mosyle section).
+#   Name: TLC Firebase CLI — Silent Install · root · recurring · scope: vibe coders / IT-dev (opt-in)
+#   Installs: firebase-tools — firebase CLI + emulator suite + Firebase MCP server (pinned)
+#   Converges to fleet pins: Node.js, Temurin Java, GitHub CLI
 # =============================================================================
 #
 # Installs the pinned `firebase-tools` npm package system-wide via the fleet

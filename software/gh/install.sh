@@ -2,13 +2,10 @@
 
 # The Life Church — GitHub CLI (gh) Silent Install
 #
-# ===== What to put in Mosyle =================================================
-#   Mosyle -> Scripts (Custom Command) -> new shell script
-#     Name:   TLC GitHub CLI (gh) — Silent Install
-#     Run:    Once or recurring     As: root     Scope: vibe coders / IT-dev
-#     Script:
-#       #!/bin/bash
-#       curl -fsSL https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/gh/install.sh | bash
+# ===== Mosyle ================================================================
+#   Paste-ready block: this folder's README (Deployment/Mosyle section).
+#   Name: TLC GitHub CLI (gh) — Silent Install · root · manual on pin bumps (or recurring) · scope: vibe coders / IT-dev
+#   Installs: GitHub CLI only (pinned; nothing else)
 # =============================================================================
 #
 # Installs GitHub's universal .pkg directly from the official release — no

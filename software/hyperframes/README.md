@@ -67,6 +67,10 @@ Mosyle → **Custom Scripts → Add Script**
 **Paste into Mosyle's Custom Script box** (the shebang is required — Mosyle writes the body to a file and executes it):
 ```bash
 #!/bin/bash
+# TLC HyperFrames CLI — Silent Install
+# Installs: hyperframes CLI (pinned) + HyperFrames agent skills (per-user)
+# Also converges to fleet pins: Node.js, FFmpeg + ffprobe, GitHub CLI
+# root · recurring · scope: creative / IT-dev (opt-in)
 curl -fsSL "https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/hyperframes/install.sh" | bash
 ```
 
