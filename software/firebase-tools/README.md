@@ -9,11 +9,12 @@ Installs the pinned [`firebase-tools`](https://github.com/firebase/firebase-tool
 
 ## What It Does
 
-1. Ensures **Node ≥ 20** — bootstraps `software/node/install.sh` if missing or too old.
-2. Ensures **Java ≥ 21** — bootstraps `software/java/install.sh` if missing or too old (the Firestore emulator requires it; the CLI itself doesn't; an existing 11/17 JRE is not enough).
-3. Installs/pins `firebase-tools` globally (fleet Node's prefix, binary at `/usr/local/bin/firebase`).
+1. Converges **Node** — always runs `software/node/install.sh` (fast no-op at the pin), so Node pin bumps reach these machines on every run; the CLI needs ≥ 20.
+2. Converges **Java** — always runs `software/java/install.sh` (no-op at the exact pinned Temurin release), so JRE patch/CVE bumps propagate too. The Firestore emulator needs ≥ 21; other JVMs on the machine are left alone.
+3. Converges the **GitHub CLI** — always runs `software/gh/install.sh` (version-idempotent; fast no-op at the pin). Not a firebase need — gh is how builders clone org repos and reach the private plugin marketplace — and running it unconditionally means **gh pin bumps reach machines that only get this script** (the standalone gh script is a manual-run deploy). Per-user `gh auth login` remains the IT-assisted first-time step.
+4. Installs/pins `firebase-tools` globally (fleet Node's prefix, binary at `/usr/local/bin/firebase`).
 
-So Mosyle only needs **this** script scoped to the group — Node and Java come along. (`software/node/` and `software/java/` stay independently deployable.)
+So Mosyle only needs **this** script scoped to the group — Node, Java, and gh come along, making it the one-stop vibe-coder toolchain script. (`software/node/`, `software/java/`, and `software/gh/` stay independently deployable.)
 
 **Pinning.** `FIREBASE_TOOLS_VERSION` at the top of `install.sh` — npm package, so integrity is the exact-version pin + the npm registry (no per-arch SHA; same posture as hyperframes). Bumps arrive as PRs from the `firebase-tools` job in `bump-pins.yml` (14-day cooldown).
 

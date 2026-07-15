@@ -23,18 +23,22 @@
 #
 # HyperFrames renders locally with headless Chrome + FFmpeg. This one script
 # stands up the whole local toolchain, in order:
-#   1. ensures Node >= 22 — bootstraps software/node/install.sh from the repo if
-#      it's missing or too old (idempotent; skipped when already current)
+#   1. converges Node — always runs software/node/install.sh (no-op at the
+#      pin), so Node pin bumps reach these machines; the CLI needs Node >= 22
 #   2. converges FFmpeg + ffprobe — always runs software/ffmpeg/install.sh (it
 #      is SHA-idempotent), so hosts with a stray brew/manual ffmpeg still get
 #      the reviewed pinned binaries at /usr/local/bin
-#   3. installs/pins the `hyperframes` CLI globally (fleet Node's prefix)
-#   4. installs the HyperFrames skills + routing rule for the CONSOLE USER
+#   3. converges the GitHub CLI — always runs software/gh/install.sh (it is
+#      version-idempotent), so gh pin bumps reach these machines too. Not a
+#      render need — gh is how staff clone org repos and reach the private
+#      plugin marketplace; this script is these machines' one-stop.
+#   4. installs/pins the `hyperframes` CLI globally (fleet Node's prefix)
+#   5. installs the HyperFrames skills + routing rule for the CONSOLE USER
 #      (drops from root), so the agent has them; the CLI itself needs no skills
 #
-# So Mosyle only needs THIS script scoped to the group — Node, ffmpeg, and skills
-# all come along. (software/node/ and software/ffmpeg/ stay independently
-# deployable for hosts that want them without HyperFrames.)
+# So Mosyle only needs THIS script scoped to the group — Node, ffmpeg, gh, and
+# skills all come along. (software/node/, software/ffmpeg/, and software/gh/
+# stay independently deployable for hosts that want them without HyperFrames.)
 #
 # The CLI provisions its own headless browser on first render
 # (chrome-headless-shell, into the invoking user's ~/.cache/puppeteer) — the
@@ -47,8 +51,8 @@
 # MCP — cloud render on HeyGen credits — is a separate product, not this.)
 #
 # Exit codes:
-#   0 — hyperframes present at the pinned version; Node + ffmpeg/ffprobe satisfied
-#   1 — install failure, or a prerequisite bootstrap (Node or ffmpeg) failed
+#   0 — hyperframes present at the pinned version; Node + ffmpeg/ffprobe + gh satisfied
+#   1 — install failure, or a prerequisite bootstrap (Node, ffmpeg, or gh) failed
 
 set -euo pipefail
 
@@ -58,10 +62,12 @@ set -euo pipefail
 HYPERFRAMES_VERSION="0.7.56"
 # Minimum Node major the CLI requires (README: "Node.js 22+").
 NODE_MIN_MAJOR="22"
-# Node + FFmpeg prerequisites — bootstrapped from this repo's own pinned
-# installers if missing (same raw URLs Mosyle uses; each target is idempotent).
+# Node/FFmpeg prerequisites + the gh companion — bootstrapped from this repo's
+# own pinned installers if missing (same raw URLs Mosyle uses; each target is
+# idempotent).
 NODE_INSTALLER_URL="https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/node/install.sh"
 FFMPEG_INSTALLER_URL="https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/ffmpeg/install.sh"
+GH_INSTALLER_URL="https://raw.githubusercontent.com/The-Life-Church/tlc-tech-policies/main/software/gh/install.sh"
 # ------------------------------------------------------------------------------
 
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
@@ -108,7 +114,7 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-# --- Ensure the fleet Node/npm (bootstrap software/node if missing or too old) ---
+# --- Converge the fleet Node/npm (always run the repo's pinned installer) ---
 export PATH="/usr/local/bin:${PATH}"
 node_ok() {
     command -v node >/dev/null 2>&1 || return 1
@@ -117,12 +123,12 @@ node_ok() {
     major=$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)
     [ "$major" -ge "$NODE_MIN_MAJOR" ]
 }
+# Unconditional: the node installer is version-idempotent (fast no-op at the
+# pin), so Node pin bumps reach these machines on every run — not only when
+# Node is missing or below the minimum.
+bootstrap_from_repo node "$NODE_INSTALLER_URL" || exit 1
 if ! node_ok; then
-    log "Node >= ${NODE_MIN_MAJOR} not found (or too old) — bootstrapping the pinned fleet Node..."
-    bootstrap_from_repo node "$NODE_INSTALLER_URL" || exit 1
-fi
-if ! node_ok; then
-    log "ERROR: Node >= ${NODE_MIN_MAJOR} still not present after bootstrap — cannot continue."
+    log "ERROR: Node >= ${NODE_MIN_MAJOR} not available after the pinned install — cannot continue."
     exit 1
 fi
 
@@ -144,6 +150,19 @@ if ! command -v ffmpeg >/dev/null 2>&1 || ! command -v ffprobe >/dev/null 2>&1; 
     exit 1
 fi
 log "FFmpeg OK: $(command -v ffmpeg) + $(command -v ffprobe)."
+
+# --- Converge the GitHub CLI (always run the repo's pinned installer) ---
+# Not a render prerequisite — gh is how staff clone org repos and reach the
+# private plugin marketplace, and this script is these machines' one-stop.
+# Unconditional: the gh installer is version-idempotent (fast no-op at the
+# pin), so gh pin bumps also reach hosts that only run THIS script (the
+# standalone gh script is a manual-run deploy).
+bootstrap_from_repo gh "$GH_INSTALLER_URL" || exit 1
+if ! command -v gh >/dev/null 2>&1; then
+    log "ERROR: gh still not found after bootstrap."
+    exit 1
+fi
+log "gh OK: $(command -v gh)."
 
 installed_version() {
     [ -f "${PKG_DIR}/package.json" ] || { echo ""; return; }
@@ -270,6 +289,6 @@ RULE
     fi
 fi
 
-log "HyperFrames toolchain ready: hyperframes ${HYPERFRAMES_VERSION}, Node $(node -v), ffmpeg + ffprobe OK."
+log "HyperFrames toolchain ready: hyperframes ${HYPERFRAMES_VERSION}, Node $(node -v), ffmpeg + ffprobe OK, gh present."
 rm -f "$LOG_FILE"
 exit 0
