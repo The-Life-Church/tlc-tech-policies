@@ -29,9 +29,10 @@
 # bump-pins.yml (14-day cooldown).
 #
 # This one script stands up the whole vibe-coder chain, in order:
-#   1. ensures Node >= 20 — bootstraps software/node/install.sh if missing/old
-#   2. ensures Java >= 21 — bootstraps software/java/install.sh if missing/old
-#      (the Firestore emulator requires it; the CLI itself does not)
+#   1. converges Node — always runs software/node/install.sh (no-op at the
+#      pin), so Node pin bumps reach these machines; the CLI needs Node >= 20
+#   2. converges Java — always runs software/java/install.sh (no-op at the
+#      pinned Temurin release); the Firestore emulator needs Java >= 21
 #   3. converges the GitHub CLI — always runs software/gh/install.sh (it is
 #      version-idempotent), so gh pin bumps reach these machines too. Not a
 #      firebase need — gh is how builders clone org repos and reach the
@@ -114,7 +115,7 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-# --- Ensure the fleet Node/npm (bootstrap software/node if missing or too old) ---
+# --- Converge the fleet Node/npm (always run the repo's pinned installer) ---
 export PATH="/usr/local/bin:${PATH}"
 node_ok() {
     command -v node >/dev/null 2>&1 || return 1
@@ -123,12 +124,12 @@ node_ok() {
     major=$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)
     [ "$major" -ge "$NODE_MIN_MAJOR" ]
 }
+# Unconditional: the node installer is version-idempotent (fast no-op at the
+# pin), so Node pin bumps reach these machines on every run — not only when
+# Node is missing or below the minimum.
+bootstrap_from_repo node "$NODE_INSTALLER_URL" || exit 1
 if ! node_ok; then
-    log "Node >= ${NODE_MIN_MAJOR} not found (or too old) — bootstrapping the pinned fleet Node..."
-    bootstrap_from_repo node "$NODE_INSTALLER_URL" || exit 1
-fi
-if ! node_ok; then
-    log "ERROR: Node >= ${NODE_MIN_MAJOR} still not present after bootstrap — cannot continue."
+    log "ERROR: Node >= ${NODE_MIN_MAJOR} not available after the pinned install — cannot continue."
     exit 1
 fi
 
@@ -139,15 +140,14 @@ BIN="${NPM_BIN}/firebase"
 
 log "Starting on ${HOSTNAME} (${SERIAL}). Node $(node -v), npm $(npm -v). Global prefix: $(npm prefix -g)."
 
-# --- Ensure Java >= JAVA_MIN_MAJOR (Firestore emulator requirement) ---
-# An older JRE (11/17) on the machine would pass a bare presence check, but
-# the emulators refuse it — require the actual minimum before skipping.
+# --- Converge Java (always run the repo's pinned installer) ---
+# Unconditional: the java installer no-ops at the exact pinned Temurin release,
+# so JRE patch/CVE bumps reach these machines on every run. Other JVMs are
+# left alone (the pinned JRE installs side-by-side). The emulators need >= 21
+# — an older JRE would pass a bare presence check but fail at emulators:start.
+bootstrap_from_repo java "$JAVA_INSTALLER_URL" || exit 1
 if ! /usr/libexec/java_home -v "${JAVA_MIN_MAJOR}+" >/dev/null 2>&1; then
-    log "Java >= ${JAVA_MIN_MAJOR} not found — bootstrapping the pinned Temurin JRE..."
-    bootstrap_from_repo java "$JAVA_INSTALLER_URL" || exit 1
-fi
-if ! /usr/libexec/java_home -v "${JAVA_MIN_MAJOR}+" >/dev/null 2>&1; then
-    log "ERROR: Java >= ${JAVA_MIN_MAJOR} still not found after bootstrap — the Firestore emulator would not run."
+    log "ERROR: Java >= ${JAVA_MIN_MAJOR} not available after the pinned install — the Firestore emulator would not run."
     exit 1
 fi
 log "Java OK: $(/usr/libexec/java_home -v "${JAVA_MIN_MAJOR}+" 2>/dev/null)."

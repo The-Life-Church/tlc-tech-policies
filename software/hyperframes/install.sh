@@ -23,8 +23,8 @@
 #
 # HyperFrames renders locally with headless Chrome + FFmpeg. This one script
 # stands up the whole local toolchain, in order:
-#   1. ensures Node >= 22 — bootstraps software/node/install.sh from the repo if
-#      it's missing or too old (idempotent; skipped when already current)
+#   1. converges Node — always runs software/node/install.sh (no-op at the
+#      pin), so Node pin bumps reach these machines; the CLI needs Node >= 22
 #   2. converges FFmpeg + ffprobe — always runs software/ffmpeg/install.sh (it
 #      is SHA-idempotent), so hosts with a stray brew/manual ffmpeg still get
 #      the reviewed pinned binaries at /usr/local/bin
@@ -114,7 +114,7 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-# --- Ensure the fleet Node/npm (bootstrap software/node if missing or too old) ---
+# --- Converge the fleet Node/npm (always run the repo's pinned installer) ---
 export PATH="/usr/local/bin:${PATH}"
 node_ok() {
     command -v node >/dev/null 2>&1 || return 1
@@ -123,12 +123,12 @@ node_ok() {
     major=$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)
     [ "$major" -ge "$NODE_MIN_MAJOR" ]
 }
+# Unconditional: the node installer is version-idempotent (fast no-op at the
+# pin), so Node pin bumps reach these machines on every run — not only when
+# Node is missing or below the minimum.
+bootstrap_from_repo node "$NODE_INSTALLER_URL" || exit 1
 if ! node_ok; then
-    log "Node >= ${NODE_MIN_MAJOR} not found (or too old) — bootstrapping the pinned fleet Node..."
-    bootstrap_from_repo node "$NODE_INSTALLER_URL" || exit 1
-fi
-if ! node_ok; then
-    log "ERROR: Node >= ${NODE_MIN_MAJOR} still not present after bootstrap — cannot continue."
+    log "ERROR: Node >= ${NODE_MIN_MAJOR} not available after the pinned install — cannot continue."
     exit 1
 fi
 
