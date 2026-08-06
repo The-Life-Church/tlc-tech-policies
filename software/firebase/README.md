@@ -24,10 +24,31 @@ Inside one project, per-app isolation is real for data and absent for deploy/aut
 | Firestore | ✅ | **Named database per app** + IAM condition on every grant: `resource.type == "firestore.googleapis.com/Database" && resource.name == "projects/<PROJECT>/databases/<app-db>"`. Rules are also per-database. |
 | Storage | ✅ | Bucket per app (`tlc-<app>-assets`); grants on the bucket, rules per bucket. |
 | Hosting / App Hosting | ❌ no per-site/backend IAM | Humans get **no deploy roles**; isolation happens at the CI layer (§4) — each repo can only assume its own deploy identity. |
-| Functions | ❌ deploy is project-wide | Per-app **codebases** (`firebase deploy --only functions:<app>`), deployed by CI only. |
+| Functions | ❌ deploy is project-wide | Per-app **codebases** (`firebase deploy --only functions:<app>`), deployed by CI only — and every app's `firebase.json` must actually *name* its codebase, or see the trap below. |
 | Auth | ❌ one pool per project | Fine for staff tools (everyone is `@thelifechurch.com`). Per-app admin tiers = **custom claims**, set by IT. Nobody gets Auth admin. |
 
 Log visibility and project overview are shared — acceptable within one trust tier; full isolation arrives with per-app projects.
+
+### The orphan-deletion trap — the one that has already bitten us
+
+On a shared project, an **unscoped** `firebase deploy --only functions` from one repo lists every *other* repo's functions as orphans and offers to delete them:
+
+> The following functions are found in your project but do not exist in your local source code … Would you like to proceed with deletion?
+
+Answering **Yes** deletes them, immediately and irreversibly. This happened on `the-life-church-apps` on **2026-08-05** — one unscoped deploy took out four functions belonging to three unrelated apps, including a project-wide Auth `beforeCreate` blocking function and the single rewrite target an entire site was served through. Recovery is a scoped redeploy of each owning repo's unchanged `main`, so the damage is downtime, not data — but nothing warns you first and nothing asks twice.
+
+Three rules, in order of how much they actually protect you:
+
+1. **Name a codebase in every repo's `firebase.json`** — `"functions": { "source": "functions", "codebase": "<app>" }`. This is the only *structural* fix. The CLI labels deployed functions `firebase-functions-codebase`, and a deploy only ever computes orphans **within the codebase it is deploying**. Functions with no label read as codebase `default`, which is why an unlabeled fleet is one prompt away from mutual destruction.
+2. **Always scope the target** — `--only functions:<codebase>:<name>,hosting:<site>`. A scoped deploy never shows the prompt at all.
+3. **Answer `N`.** Always, on a shared project, no exceptions. A legitimately dead function can be deleted deliberately, by name, later.
+
+Two things to know when adding a codebase to a repo whose functions are **already deployed**:
+
+- **The relabeling deploy is safe.** The CLI matches existing functions to wanted ones **by name before label**, so the deploy reports `updating`, not `creating` — in-place, no delete/recreate, no `ALREADY_EXISTS`.
+- **It breaks bare `--only` selectors, so fix CI in the same commit.** Once a codebase is named, `--only functions:myFn` resolves to codebase `default`, intersects with the config's codebases to nothing, and the deploy dies with `No function matches given --only filters`. Every CI target needs the `<codebase>:` prefix. It fails loudly rather than deploying nothing, but it fails.
+
+Reference migration: `tlc-resources` (codebase `resources`) and `newsletter-tool` (codebase `newsletter`), both done 2026-08-06 — `firebase.json` + the workflow's `--only` targets changed together, then one scoped deploy per repo to apply the labels.
 
 ## 3. The builder bundle (per-builder IAM)
 
