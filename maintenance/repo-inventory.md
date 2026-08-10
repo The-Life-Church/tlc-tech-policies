@@ -4,7 +4,7 @@
 production is not visible from the PR, and it differs per repo.
 
 Verified 2026-08-10 against the GitHub and Firebase APIs. Re-verify with
-[`scripts/deploy-drift-audit.sh`](../scripts/deploy-drift-audit.sh) rather than
+[`scripts/deploy-drift-audit.sh`](scripts/deploy-drift-audit.sh) rather than
 trusting this table's age.
 
 ## Repos with a deploy path
