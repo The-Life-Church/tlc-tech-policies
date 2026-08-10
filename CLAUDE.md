@@ -6,6 +6,10 @@ Guidance for Claude Code sessions in this repo. (Not to be confused with `softwa
 
 Managed IT policy for The Life Church staff Macs and Claude surfaces. **Merging to `main` is deploying**: Mosyle pulls scripts from `raw.githubusercontent.com/.../main/...` on recurring schedules, so anything merged here runs as root on staff machines on the next cycle. Review accordingly. The repo is public so Mosyle's unauthenticated pulls work — nothing sensitive goes in here, ever.
 
+**`maintenance/` is the one area that is not fleet-facing.** It holds cross-repo upkeep procedures for the org's *GitHub repos* — the repo inventory (which repos deploy to production on merge), Dependabot sweeps, CodeQL triage, the deploy-drift audit, and the handoff-comment template for non-developer owners. Nothing in `maintenance/scripts/` may be wired to a Mosyle Custom Script; it runs from a maintainer's machine against the GitHub and GCP APIs. Start at [`maintenance/README.md`](./maintenance/README.md), and read [`maintenance/repo-inventory.md`](./maintenance/repo-inventory.md) before merging a PR in any other org repo — whether a merge ships to production differs per repo and isn't visible from the PR.
+
+Because the repo is public, `maintenance/` records *criteria* for holding an unfixed advisory, never a live register of which production apps carry one. That state belongs in the access-controlled Security tab.
+
 ## Hard rules
 
 - Scripts run as root via `curl | bash` from Mosyle. Treat every edit as fleet-impacting.
