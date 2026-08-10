@@ -42,7 +42,7 @@ CVE numbers, and anything implying they did something wrong.
 > ```
 > Before we do anything else: pull the latest changes from GitHub for this
 > project, then reinstall the dependencies with <npm ci | pnpm install>.
-> Jacob updated <lockfile> with security patches. If there is a conflict in
+> IT updated <lockfile> with security patches. If there is a conflict in
 > <lockfile>, keep the version from GitHub (main), not the local one.
 > Then <a verification command, e.g. run npm run check-data> and tell me
 > whether it passed.
@@ -84,10 +84,15 @@ CVE numbers, and anything implying they did something wrong.
 
 ## Worked examples
 
-- Brandon / `tlc-wall-boxes` — [PR #3 comment](https://github.com/The-Life-Church/tlc-wall-boxes/pull/3#issuecomment-5242443146)
-- Nate / `process-wiki` — [PR #5 comment](https://github.com/The-Life-Church/process-wiki/pull/5#issuecomment-5242951072)
+Both from the 2026-08-10 dependency sweep (private repos — you'll need access):
 
-The Nate one adds a repo-specific touch worth copying: it calls out that the
-diagram library moved, because that's the one change with a plausible visible
-effect. Flagging the *specific* thing they might notice beats a generic "let me
-know if anything looks off".
+- `tlc-wall-boxes` — [PR #3 comment](https://github.com/The-Life-Church/tlc-wall-boxes/pull/3#issuecomment-5242443146)
+- `process-wiki` — [PR #5 comment](https://github.com/The-Life-Church/process-wiki/pull/5#issuecomment-5242951072)
+
+The `process-wiki` one adds a repo-specific touch worth copying: it calls out
+that the diagram library moved, because that's the one change with a plausible
+visible effect. Naming the *specific* thing they might notice beats a generic
+"let me know if anything looks off".
+
+Address the comment to the repo's maintainer by @-handle from the collaborator
+list — don't record names in this file.

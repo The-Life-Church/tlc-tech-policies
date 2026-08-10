@@ -12,6 +12,7 @@ Because the repo is public, `maintenance/` records *criteria* for holding an unf
 
 ## Hard rules
 
+- **No staff names in this repo — it's public.** Refer to roles (`IT`, `the repo's maintainer`, `ministry / creative staff`), never individuals, in docs, comments, and commit messages. Where a person-to-thing mapping is genuinely needed, point at the GitHub collaborator list or another access-controlled source instead of copying it in. Same reasoning as the no-secrets rule: this repo is world-readable so Mosyle can pull it unauthenticated.
 - Scripts run as root via `curl | bash` from Mosyle. Treat every edit as fleet-impacting.
 - Test scripts before merge: `bash -n` at minimum; logic changes get a real run on a test Mac.
 - Validate workflow YAML with `ruby -ryaml -e "YAML.safe_load(File.read('<file>'), aliases: true)"` — stock macOS has no PyYAML. JSON: `/usr/bin/python3 -m json.tool <file>`.

@@ -47,22 +47,28 @@ mechanism and the 2026-08-05 incident that produced the rule.
 misconfigured, first-time sign-in fails for every app on the project while
 existing users are unaffected — which presents as "intermittent" login problems.
 
-## Primary contacts
+## Who maintains what
 
-Recorded from commit and PR authorship, not from an org chart — correct these as
-needed.
+**This repo is public, so no individual names appear here.** The current
+person-to-repo mapping is the repo's collaborator list on GitHub, which is
+access-controlled and can't go stale. What matters for this runbook isn't *who*
+owns a repo but *how they work*, which changes how you hand a change back.
 
-| Repo | Primary | Works via |
+| Repo | Maintained by | Hand changes back via |
 |---|---|---|
-| `tlc-wall-boxes` | Brandon | Claude Code; treat as non-developer |
-| `four-quadrants`, `process-wiki` | Nate | Claude Code; treat as non-developer |
-| `newsletter-tool` | Kemesha (+ Nate reviews) | Claude Code |
-| `tlc-resources`, `Signature-Manager`, `tlc-tech-policies`, `MPNext` | IT | directly |
+| `tlc-wall-boxes`, `four-quadrants`, `process-wiki`, `newsletter-tool` | ministry / creative staff | a handoff comment with a paste-ready prompt |
+| `tlc-resources`, `Signature-Manager`, `tlc-tech-policies`, `MPNext` | IT / Dev | normal PR review |
 
-When changing a repo whose primary is a non-developer, leave a handoff comment
-using [`templates/vibe-coder-handoff-comment.md`](templates/vibe-coder-handoff-comment.md).
-They drive their projects by prompting Claude, so a comment full of shell
-commands doesn't land — a paste-ready prompt does.
+For the first group, use
+[`templates/vibe-coder-handoff-comment.md`](templates/vibe-coder-handoff-comment.md).
+They drive their projects by prompting Claude rather than running commands, so a
+comment full of shell invocations doesn't land — a prompt they can paste does.
+
+Check the collaborator list before assuming a repo falls in either group:
+
+```bash
+gh api repos/The-Life-Church/<repo>/collaborators --jq '.[].login'
+```
 
 ## Gotchas worth knowing before you touch these
 
