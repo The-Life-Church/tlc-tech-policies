@@ -31,11 +31,15 @@ tlc-tech-policies/
 │   ├── selfservice/  ← Progress wrapper for Mosyle Self-Service items (swiftDialog window around any installer)
 │   ├── security/     ← Ad-hoc read-only threat scans (Shai-Hulud npm worm scanner)
 │   └── chrome/       ← Chrome managed prefs: force-install Google PWAs (Mosyle Per-App Config)
-└── hardware/
-    └── dock/         ← Staff Dock seeding (curl|bash bootstrap; + selective Gemini add)
+├── hardware/
+│   └── dock/         ← Staff Dock seeding (curl|bash bootstrap; + selective Gemini add)
+└── maintenance/      ← Cross-repo upkeep of org GitHub repos (NOT Mosyle-facing): repo
+                        inventory, Dependabot sweeps, CodeQL triage, deploy-drift audit
 ```
 
 Each folder has its own `README.md` — the source of truth for what's inside, how it deploys, scope, and exit codes. Start there for details; this file is just the map.
+
+`software/` and `hardware/` describe things installed **on devices**, delivered by `mosyle/`. `maintenance/` is the exception: it acts on **repositories**, runs from a maintainer's machine, and nothing in it should ever be wired to a Mosyle Custom Script.
 
 **Adding a tool installer?** Follow the four-step checklist in [`CLAUDE.md`](./CLAUDE.md) — especially step 3, adding the tool to `bump-pins.yml`, or its version pin silently goes stale.
 
@@ -78,6 +82,7 @@ Skills live in the private companion repo because the Claude.ai admin console on
 | [`software/security`](./software/security/README.md) | Ad-hoc read-only threat scans (Shai-Hulud npm worm scanner) | Node-bearing machines |
 | [`software/chrome`](./software/chrome/README.md) | Force-install Google PWAs via Chrome Enterprise Core | Top-level org |
 | [`hardware/dock`](./hardware/dock/README.md) | Dock seeding at enrollment via pinned dockutil | Provisioning group, one-time |
+| [`maintenance`](./maintenance/README.md) | Cross-repo upkeep of org GitHub repos — repo inventory (what deploys on merge), Dependabot sweeps, CodeQL triage, deploy-drift audit, non-developer handoff template. **Not Mosyle-facing**; runs from a maintainer's machine | IT reference |
 
 **How pinned installers stay current:** [`bump-pins.yml`](./.github/workflows/bump-pins.yml) checks upstream weekly and opens a PR bumping version + SHA once a release is ≥14 days old (supply-chain cooldown; manual dispatch overrides for urgent security fixes). Merging the PR is the deploy — devices converge on their next recurring Mosyle run.
 
