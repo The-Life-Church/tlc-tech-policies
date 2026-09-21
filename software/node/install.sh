@@ -21,8 +21,8 @@ set -euo pipefail
 # --- Pinned release ----------------------------------------------------------
 # Update both lines together. Pick the current LTS from https://nodejs.org/dist/
 # and copy the .pkg line from https://nodejs.org/dist/<ver>/SHASUMS256.txt
-NODE_VERSION="v24.19.0"
-NODE_SHA256="13ecebfefa0234e3d618b4a0af8c5803bdeedab30b84ee37cccafb7276d90a0e"
+NODE_VERSION="v24.21.0"
+NODE_SHA256="9831a74b04c270a429bd5a240e37712c4fe229b02b032e18ff2e0702c17c20fd"
 # ------------------------------------------------------------------------------
 
 PKG_URL="https://nodejs.org/dist/${NODE_VERSION}/node-${NODE_VERSION}.pkg"
