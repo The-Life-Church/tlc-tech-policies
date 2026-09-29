@@ -102,7 +102,7 @@ The quality gate is **branch protection, not the deploy tool**: only reviewed, c
 Run once per new app; afterwards the builder ships by merging.
 
 1. **Repo** — create the org repo from the app template (private, `The-Life-Church`); builder gets write access.
-2. **Home** — per-app project (`tlc-<app>-prod`, billing + budget alert, enable APIs) — or, shared-project interim: create the named Firestore DB, the `tlc-<app>-assets` bucket, and the Hosting site / App Hosting backend.
+2. **Home** — per-app project (`tlc-<app>-prod`, billing + budget alert, enable APIs; static apps: `firebase hosting:sites:create <site-id> --project=tlc-<app>-prod` — projects created on/after 2026-10-15 get no default Hosting site, so the first CI deploy 404s without it) — or, shared-project interim: create the named Firestore DB, the `tlc-<app>-assets` bucket, and the Hosting site / App Hosting backend.
 3. **Deploy wiring** — App Hosting: connect the repo, live branch `main`, `apphosting.yaml` present. Static: confirm the template's deploy workflow, create the deploy SA + WIF pool/provider conditioned to **the repo and `refs/heads/main`** (see §4 — repo-only is bypassable from any branch).
 4. **Branch protection** on `main` — PR required, checks required, include admins.
 5. **Builder bundle** (§3) for each builder on the app.
