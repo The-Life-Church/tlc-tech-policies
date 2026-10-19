@@ -22,8 +22,8 @@ set -euo pipefail
 # --- Pinned release ----------------------------------------------------------
 # Update both lines together. SHA comes from gh_<ver>_checksums.txt on the
 # release page: https://github.com/cli/cli/releases
-GH_VERSION="2.97.0"
-GH_SHA256="78eaaf7f72cb130f225bcf3f17e686e0e21ce2c9f84b393d83eb0439e484d15f"
+GH_VERSION="2.102.0"
+GH_SHA256="1787e65f36626245a6b3cee353a458f6ea4372008548ceb8fb5d5dfb55b006d0"
 # ------------------------------------------------------------------------------
 
 PKG_URL="https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_macOS_universal.pkg"
