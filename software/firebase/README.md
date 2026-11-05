@@ -95,7 +95,7 @@ The quality gate is **branch protection, not the deploy tool**: only reviewed, c
 
 - **App Hosting:** none to manage. Rollback = re-deploy a prior rollout from the console. Runtime config/secrets via `apphosting.yaml` + **Secret Manager** (grant the backend's runtime SA `secretAccessor` per secret) — production apps never use `.env` files.
 - **Static Hosting:** one SA per app: `roles/firebasehosting.admin` + `roles/firebase.viewer` (note: `firebasehosting.admin` is project-wide — the WIF repo condition is what scopes it to one app). Migrate any key-based deploy SA (`firebase init hosting:github` mints JSON keys into GitHub secrets) to WIF, then **delete the user-managed keys**.
-- **Keys, generally:** nobody needs standing key powers. If a key is truly unavoidable, grant `roles/iam.serviceAccountKeyAdmin` **on that one SA resource** (`gcloud iam service-accounts add-iam-policy-binding …`), never at project level. Once all deploy SAs are on WIF, enable the org policy `constraints/iam.disableServiceAccountKeyCreation` and close the class permanently.
+- **Keys, generally:** nobody needs standing key powers. If a key is truly unavoidable, grant `roles/iam.serviceAccountKeyAdmin` **on that one SA resource** (`gcloud iam service-accounts add-iam-policy-binding …`), never at project level. Once all deploy SAs are on WIF, enable the org policy `constraints/iam.disableServiceAccountKeyCreation` and close the class permanently. Until then it's enforced per project where nothing needs keys (life-mp, since 2026-11-05). Setting org policies requires `roles/orgpolicy.policyAdmin`, which Owner and Organization Administrator don't include. Grant it to yourself for the change and remove it afterwards.
 
 ## 6. App onboarding checklist (the project factory)
 
