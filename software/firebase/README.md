@@ -35,7 +35,7 @@ On a shared project, an **unscoped** `firebase deploy --only functions` from one
 
 > The following functions are found in your project but do not exist in your local source code … Would you like to proceed with deletion?
 
-Answering **Yes** deletes them, immediately and irreversibly. This happened on `the-life-church-apps` on **2026-08-05** — one unscoped deploy took out four functions belonging to three unrelated apps, including a project-wide Auth `beforeCreate` blocking function and the single rewrite target an entire site was served through. Recovery is a scoped redeploy of each owning repo's unchanged `main`, so the damage is downtime, not data — but nothing warns you first and nothing asks twice.
+Answering **Yes** deletes them, immediately and irreversibly. This has happened to us on a shared project: one unscoped deploy took out several functions belonging to unrelated apps, and other apps went down until each was redeployed. Recovery is a scoped redeploy of each owning repo's unchanged `main`, so the damage is downtime, not data — but nothing warns you first and nothing asks twice.
 
 Three rules, in order of how much they actually protect you:
 
