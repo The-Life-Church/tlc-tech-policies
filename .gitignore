@@ -25,6 +25,8 @@ Thumbs.db
 # =============================================================
 CLAUDE.local.md
 TODO.md
+# Playwright MCP page snapshots and console logs (can capture live page content)
+.playwright-mcp/
 
 # =============================================================
 # MOSYLE API — local integration, NEVER commit
