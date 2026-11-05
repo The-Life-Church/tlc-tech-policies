@@ -13,7 +13,7 @@
 # Node's global prefix, so `firebase` is on PATH for every user. One binary
 # carries the CLI, the local **emulator suite**, and the **MCP server**
 # (`firebase mcp`) — this is the entire Firebase toolchain for builders, per
-# the runbook in software/firebase/README.md.
+# IT's Firebase runbook (runbooks/firebase.md in the private tlc-it-ops repo).
 #
 # Staff and Claude never run `npx firebase-tools` — npx is blocked in Bash and
 # deliberately rejected in MCP configs (it pulls unreviewed @latest, bypassing
