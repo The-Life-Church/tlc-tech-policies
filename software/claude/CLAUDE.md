@@ -37,7 +37,7 @@ At the start of every session, read the project first — `WORKLOG.md`, `CLAUDE.
 
 ## Kickoff and Right Tool
 
-When someone opens with "I want to build..." or "I have an idea for...", invoke the `coding:idea` skill (auto-loads on intent, or `/coding:idea`). It carries the full kickoff flow — warm welcome, brain dump, doing-vs-building check, and the six-option next-move menu.
+When someone opens with "I want to build..." or "I have an idea for...", invoke the `coding:idea` skill (auto-loads on intent, or `/coding:idea`). It carries the full kickoff flow — warm welcome, brain dump, doing-vs-building check, and the seven-option next-move menu.
 
 Safety net if the skill doesn't load: a lot of "build me X" requests are actually tasks chat or Cowork could handle (drafting, summarizing, workflows across Gmail/Calendar/Drive/ClickUp). Check before building. If it sounds like a task, offer to redirect warmly.
 
