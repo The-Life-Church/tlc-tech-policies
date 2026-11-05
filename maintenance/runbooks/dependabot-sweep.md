@@ -123,3 +123,61 @@ prompt instead.
   `resources.thelifechurch.com/api/me` → `401`, `tlc-newsletter.web.app/` → `302`.
 - Confirm CI actually deployed what you think. See
   [`deploy-drift-audit.md`](deploy-drift-audit.md).
+
+## 7. The weekly sweep routine (automation of steps 2–4)
+
+A scheduled Claude Code cloud routine runs this runbook every **Monday at 8:00
+Central**. It finds what Dependabot didn't handle, opens PRs for what it can fix,
+and posts one report to the **Dep Updates** webhook in IT's GitHub Alerts Google
+Chat space. Its prompt lives in
+[`../routines/dep-sweep-prompt.md`](../routines/dep-sweep-prompt.md), and it reads
+this runbook and [`../repo-inventory.md`](../repo-inventory.md) at the start of
+every run. **Editing those two files changes how the routine behaves.**
+
+What it will and won't do:
+
+- **Never** merges, deploys, dismisses alerts, or pushes to a default branch. A
+  person merges, and checks `repo-inventory.md` for what that merge ships.
+- Lockfile-only fixes and overrides that already exist in another org repo are
+  opened as ready PRs. Code migrations are opened as **drafts**, after it has
+  built them, and include what a human must test after deploy.
+- A lockfile fix that downgrades a runtime package is reverted and reported,
+  not opened. `npm audit fix` will do this to dodge an advisory (seen 2026-11).
+- Parent-pinned findings with no override precedent go into the report's
+  *Holding* count. They don't need you unless they're critical.
+- Quiet weeks post a single ✅ line, so silence means it didn't run.
+
+### Why it runs `pnpm audit` / `npm audit` instead of reading Dependabot alerts
+
+Cloud routine sessions reach `api.github.com` only through Anthropic's session
+proxy. The proxy uses the `claude` GitHub App's token, scoped to the repos
+attached to the routine. Org-level endpoints are refused ("sessions are bound to
+their configured repositories"). Repo-level Dependabot alert endpoints return
+403, because that app has no Dependabot-alerts permission. Custom header secrets
+for `api.github.com` are **not** applied, so a PAT or your own GitHub App can't
+work around it. The package-manager audits query the same GitHub Advisory
+Database and need no token. Repo-scoped calls (listing PRs, opening PRs) work.
+
+Side effect: alerts dismissed in GitHub (e.g. the held `@grpc/grpc-js`) still
+show up in audits. The routine classifies them as parent-pinned and counts them
+under *Holding*.
+
+### Configuration (rebuild under your own account if the owner leaves)
+
+A routine belongs to the claude.ai account that created it and stops if that
+account goes away. To rebuild it, create a new routine at claude.ai/code with:
+
+| Setting | Value |
+|---|---|
+| Schedule | `0 14 * * 1` (UTC) = Mondays 8:00 CST |
+| Model | Opus (code-migration drafts need it) |
+| Repositories | every active org repo **except MPNext**. A new repo is invisible until attached, so the report's last line, "Audited *n* repos", is the check. |
+| Environment | a dedicated one, network *Limited* with `api.github.com` and `chat.googleapis.com` plus *Allow package managers* |
+| Environment variable | `CHAT_WEBHOOK_URL` = the Dep Updates incoming webhook. It's a credential: set it in the environment, never in the prompt or this repo. |
+| Secrets | none needed |
+| Connectors | none |
+| Auto-fix PRs | off until trusted (it may chase bot review comments) |
+| Prompt | paste [`../routines/dep-sweep-prompt.md`](../routines/dep-sweep-prompt.md) |
+
+Debug a bad run from the routine's run log ("list runs" → open the session),
+not by re-running blind.
