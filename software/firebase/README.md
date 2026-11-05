@@ -11,9 +11,9 @@ How Firebase projects, access, and deploys work for staff-built apps. This is th
 | The app is… | It lives… |
 |---|---|
 | Static, no data, no functions, no login beyond the resources gate | The **resources site** (`resource-site` skill) or a Hosting site on the shared project. No new IAM, ever. |
-| Anything with Firestore, Functions, Auth needs, or App Hosting | Its **own Firebase project** (`tlc-<app>-prod`) — end state. Until the billing-account project quota is raised (see §7), new apps join the **shared vibe-coder project** using the isolation recipe in §2. |
+| Anything with Firestore, Functions, Auth needs, or App Hosting | A **shared project** for its billing tier, using the isolation recipe in §2 — named database, own bucket, own codebase, **own runtime and deploy service accounts**. |
 
-**Quota note:** the ~5-project cap is the default project-link quota on the billing account, not an architectural limit. File the increase (Billing → quota increase request); migrate data-bearing apps to per-app projects as it lands.
+**Why shared, not per-app projects:** projects are split by billing account, and the billing account's project cap (~5) rules out a project per app. Many apps per project is the standing model, so per-app isolation has to happen *inside* the project — chiefly through per-app service accounts (§2).
 
 ## 2. Shared-project isolation recipe
 
@@ -26,8 +26,49 @@ Inside one project, per-app isolation is real for data and absent for deploy/aut
 | Hosting / App Hosting | ❌ no per-site/backend IAM | Humans get **no deploy roles**; isolation happens at the CI layer (§4) — each repo can only assume its own deploy identity. |
 | Functions | ❌ deploy is project-wide | Per-app **codebases** (`firebase deploy --only functions:<app>`), deployed by CI only — and every app's `firebase.json` must actually *name* its codebase, or see the trap below. |
 | Auth | ❌ one pool per project | Fine for staff tools (everyone is `@thelifechurch.com`). Per-app admin tiers = **custom claims**, set by IT. Nobody gets Auth admin. |
+| Runtime identity | ✅ | **One runtime SA per app**, granted only that app's database, bucket, and secrets. See *Per-app runtime identity* below. |
 
-Log visibility and project overview are shared — acceptable within one trust tier; full isolation arrives with per-app projects.
+Log visibility and project overview are shared — acceptable within one trust tier.
+
+### Per-app runtime identity — never run on a default SA
+
+Every function or backend that doesn't name a service account runs as a project-wide default, and **every app in the project shares it**:
+
+| Workload | Default identity |
+|---|---|
+| Gen1 Cloud Function | App Engine default SA (`<project>@appspot.gserviceaccount.com`) — on older projects it holds `roles/editor` |
+| Gen2 Cloud Function | Default compute SA (`<number>-compute@developer.gserviceaccount.com`) |
+| App Hosting backend | `firebase-app-hosting-compute@<project>.iam.gserviceaccount.com` |
+
+On a shared project that's the whole problem: a bug in the smallest app can read every other app's databases and secrets, because they're all granted to the same identity (its **blast radius** is everyone's). So each app gets its own runtime SA, created at onboarding (§6):
+
+```bash
+PROJECT=<project-id>; APP=<app>; APP_DB=<app-db>
+SA="${APP}-runtime@${PROJECT}.iam.gserviceaccount.com"
+gcloud iam service-accounts create "${APP}-runtime" --project="$PROJECT" --display-name="${APP} runtime"
+
+# its database only
+gcloud projects add-iam-policy-binding "$PROJECT" --member="serviceAccount:${SA}" --role=roles/datastore.user \
+  --condition="title=${APP_DB}-only,expression=resource.type == \"firestore.googleapis.com/Database\" && resource.name == \"projects/${PROJECT}/databases/${APP_DB}\""
+# its bucket only
+gcloud storage buckets add-iam-policy-binding "gs://tlc-${APP}-assets" --member="serviceAccount:${SA}" --role=roles/storage.objectAdmin
+# each secret it reads, one at a time
+gcloud secrets add-iam-policy-binding <SECRET> --project="$PROJECT" --member="serviceAccount:${SA}" --role=roles/secretmanager.secretAccessor
+# only if it signs URLs / custom tokens (signBlob on itself, not on the project)
+gcloud iam service-accounts add-iam-policy-binding "$SA" --member="serviceAccount:${SA}" --role=roles/iam.serviceAccountTokenCreator
+```
+
+Add only what the code calls — e.g. `roles/firebaseauth.admin` (project-wide; there's no narrower scope) if it creates session cookies or manages users. Never `roles/editor`, never project-level `serviceAccountTokenCreator` or `serviceAccountUser`.
+
+Then point the workload at it:
+
+- **Gen1:** `functions.runWith({ serviceAccount: '<app>-runtime@<project>.iam.gserviceaccount.com' })`
+- **Gen2:** `setGlobalOptions({ serviceAccount: '…' })` once per codebase, or `serviceAccount` in each function's options (including blocking functions like `beforeUserCreated`).
+- **App Hosting:** chosen at backend creation — `firebase apphosting:backends:create --service-account=<sa>` or the console's service-account field. It also runs the backend's builds, so grant it what the backend's `apphosting.yaml` secrets need.
+
+The app's deploy SA (§5) needs `roles/iam.serviceAccountUser` **on that one runtime SA** to deploy as it — granted on the SA resource, not the project.
+
+**The build identity is separate.** Gen2 (and, on current projects, gen1) builds run as the default compute SA regardless of runtime SA, so that SA keeps its build roles (`roles/cloudbuild.builds.builder`, Artifact Registry access). Strip everything else from it once no function runs as it.
 
 ### The orphan-deletion trap — the one that has already bitten us
 
@@ -94,7 +135,7 @@ The quality gate is **branch protection, not the deploy tool**: only reviewed, c
 ## 5. Deploy identities
 
 - **App Hosting:** none to manage. Rollback = re-deploy a prior rollout from the console. Runtime config/secrets via `apphosting.yaml` + **Secret Manager** (grant the backend's runtime SA `secretAccessor` per secret) — production apps never use `.env` files.
-- **Static Hosting:** one SA per app: `roles/firebasehosting.admin` + `roles/firebase.viewer` (note: `firebasehosting.admin` is project-wide — the WIF repo condition is what scopes it to one app). Migrate any key-based deploy SA (`firebase init hosting:github` mints JSON keys into GitHub secrets) to WIF, then **delete the user-managed keys**.
+- **Static Hosting / Functions:** one deploy SA per app: `roles/firebasehosting.admin` + `roles/firebase.viewer` (note: `firebasehosting.admin` is project-wide — the WIF repo condition is what scopes it to one app). If the app deploys functions, add `roles/cloudfunctions.developer` plus `roles/iam.serviceAccountUser` **on its own runtime SA only** (§2). A shared deploy SA with project-wide `serviceAccountUser` can deploy code as *any* SA in the project — including ones with domain-wide delegation. Migrate any key-based deploy SA (`firebase init hosting:github` mints JSON keys into GitHub secrets) to WIF, then **delete the user-managed keys**.
 - **Keys, generally:** nobody needs standing key powers. If a key is truly unavoidable, grant `roles/iam.serviceAccountKeyAdmin` **on that one SA resource** (`gcloud iam service-accounts add-iam-policy-binding …`), never at project level. Once all deploy SAs are on WIF, enable the org policy `constraints/iam.disableServiceAccountKeyCreation` and close the class permanently. Until then it's enforced per project where nothing needs keys (life-mp, since 2026-11-05). Setting org policies requires `roles/orgpolicy.policyAdmin`, which Owner and Organization Administrator don't include. Grant it to yourself for the change and remove it afterwards.
 
 ## 6. App onboarding checklist (the project factory)
@@ -102,8 +143,8 @@ The quality gate is **branch protection, not the deploy tool**: only reviewed, c
 Run once per new app; afterwards the builder ships by merging.
 
 1. **Repo** — create the org repo from the app template (private, `The-Life-Church`); builder gets write access.
-2. **Home** — per-app project (`tlc-<app>-prod`, billing + budget alert, enable APIs; static apps: `firebase hosting:sites:create <site-id> --project=tlc-<app>-prod` — projects created on/after 2026-10-15 get no default Hosting site, so the first CI deploy 404s without it) — or, shared-project interim: create the named Firestore DB, the `tlc-<app>-assets` bucket, and the Hosting site / App Hosting backend.
-   - **Default service accounts start with no roles.** The org enforces `constraints/iam.automaticIamGrantsForDefaultServiceAccounts` (since 2026-11-05), so a new project's default compute SA (`<number>-compute@developer.gserviceaccount.com`) no longer gets `roles/editor`. Editor on a default SA let anything running as it mint keys for any other SA in the project, including ones with domain-wide delegation. The symptom is a first **Cloud Functions** deploy failing on build or Artifact Registry permissions, because builds run as that SA. Fix it by granting only what's needed, never by turning the policy off. Better still, give the function its own runtime SA (`serviceAccount` in the function options) with just the roles it uses (e.g. `roles/datastore.user`). The default compute SA, when it does the build, needs `roles/cloudbuild.builds.builder`. App Hosting backends use their own runtime SA (`firebase-app-hosting-compute@…`), which Firebase sets up itself. Verify that on the first backend, since this policy is new.
+2. **Home** — in the shared project for its billing tier (§1): create the named Firestore DB, the `tlc-<app>-assets` bucket, the **`<app>-runtime` SA with its grants (§2)**, and the Hosting site (`firebase hosting:sites:create <site-id> --project=<project>`) or App Hosting backend (created with `--service-account=<app>-runtime@…`). A brand-new project (rare — only for a new billing tier) needs billing + budget alert and APIs enabled first; projects created on/after 2026-10-15 get no default Hosting site, so the first CI deploy 404s without one.
+   - **Default service accounts start with no roles.** The org enforces `constraints/iam.automaticIamGrantsForDefaultServiceAccounts` (since 2026-11-05), so a new project's default compute SA (`<number>-compute@developer.gserviceaccount.com`) no longer gets `roles/editor`. Editor on a default SA let anything running as it mint keys for any other SA in the project, including ones with domain-wide delegation. The symptom is a first **Cloud Functions** deploy failing on build or Artifact Registry permissions, because builds run as that SA. Fix it by granting the build roles only (`roles/cloudbuild.builds.builder` on the default compute SA, which does the build), never by turning the policy off. Runtime access goes on the app's own `<app>-runtime` SA (§2), not on the default.
 3. **Deploy wiring** — App Hosting: connect the repo, live branch `main`, `apphosting.yaml` present. Static: confirm the template's deploy workflow, create the deploy SA + WIF pool/provider conditioned to **the repo and `refs/heads/main`** (see §4 — repo-only is bypassable from any branch).
 4. **Branch protection** on `main` — PR required, checks required, include admins.
 5. **Builder bundle** (§3) for each builder on the app.
