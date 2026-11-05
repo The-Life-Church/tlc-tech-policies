@@ -22,6 +22,7 @@ folder.
 |---|---|
 | [`repo-inventory.md`](repo-inventory.md) | **Read this before merging anything.** Which repos deploy to production on merge, what gates exist, which Firebase project and functions codebase each one owns. |
 | [`runbooks/dependabot-sweep.md`](runbooks/dependabot-sweep.md) | Dependabot alerts have piled up and you want them actually cleared. |
+| [`routines/dep-sweep-prompt.md`](routines/dep-sweep-prompt.md) | The weekly sweep routine's prompt (runbook §7). Keep it in sync with the live routine. |
 | [`runbooks/codeql-triage.md`](runbooks/codeql-triage.md) | Code-scanning alerts need sorting into fix / dismiss / decide, and dismissals need defensible reasons. |
 | [`runbooks/deploy-drift-audit.md`](runbooks/deploy-drift-audit.md) | After an outage or a confusing week: is every repo's `main` actually live? |
 | [`templates/vibe-coder-handoff-comment.md`](templates/vibe-coder-handoff-comment.md) | You changed someone's repo and they need to pull before their next session. |
