@@ -1,6 +1,6 @@
 # Firebase CLI (firebase-tools) — Silent Installer
 
-Installs the pinned [`firebase-tools`](https://github.com/firebase/firebase-tools) npm package system-wide via the fleet Node's global prefix, so `firebase` is on PATH for every user. One binary carries the **CLI**, the local **emulator suite**, and the **MCP server** (`firebase mcp`) — the entire Firebase toolchain for builders. How builders actually use it (emulator-first dev, MCP boundaries, ship-by-git-push) is defined in the runbook: [`software/firebase/README.md`](../firebase/README.md).
+Installs the pinned [`firebase-tools`](https://github.com/firebase/firebase-tools) npm package system-wide via the fleet Node's global prefix, so `firebase` is on PATH for every user. One binary carries the **CLI**, the local **emulator suite**, and the **MCP server** (`firebase mcp`) — the entire Firebase toolchain for builders. How builders actually use it (emulator-first dev, MCP boundaries, ship-by-git-push) is defined in IT's Firebase runbook (`runbooks/firebase.md` in the private `tlc-it-ops` repo).
 
 ## Why a fleet install (and not npx or a repo devDependency)
 
