@@ -22,7 +22,7 @@ The fleet `CLAUDE.md` keeps guardrails resident and points at plugin skills for 
 | `coding:github-repo-setup` | `coding/skills/github-repo-setup` | First-time GitHub auth, fine-grained PATs, coworker sharing; fetches the `.gitignore` template below |
 | `firebase-auth-gatekeeper` (**no `coding:` prefix yet**) | **Not in the plugin yet.** It's a standalone skill outside `tlc-claude-plugins` | Staff-only sign-in: inspects the project's shape, then structures it so IT can turn auth on at go-live |
 
-**The gatekeeper pointer is deliberately unprefixed.** The planned move into the `coding` plugin is in `tlc-claude-plugins/proposals/gatekeeper-rebuild-spec.md`. When that lands, change the *Requiring a Login* pointer in `CLAUDE.md` to `coding:firebase-auth-gatekeeper` **in the same window**, and update this row. Renaming the pointer before the skill moves breaks login guidance on every Mac.
+**The gatekeeper pointer is deliberately unprefixed.** The planned move into the `coding` plugin is tracked in tlc-claude-plugins. When that lands, change the *Requiring a Login* pointer in `CLAUDE.md` to `coding:firebase-auth-gatekeeper` **in the same window**, and update this row. Renaming the pointer before the skill moves breaks login guidance on every Mac.
 
 The `coding` plugin also carries two skills `CLAUDE.md` doesn't point at directly. They're reached through `coding:idea`'s next-move menu (option 5, *publish it on the resources site*):
 
