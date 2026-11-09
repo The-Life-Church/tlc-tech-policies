@@ -30,9 +30,9 @@ set -euo pipefail
 
 # --- Pinned release ----------------------------------------------------------
 # Bump via the dialog job in bump-pins.yml. Asset: dialog-<ver>-<build>.pkg
-DIALOG_VERSION="3.1.0"
-DIALOG_BUILD="4994"
-DIALOG_SHA256="462921537425146b00b936448e518578b58d5177c039a609532cfea349c3e166"
+DIALOG_VERSION="3.1.1"
+DIALOG_BUILD="5000"
+DIALOG_SHA256="58a77a5e963099c04e545c27f5b3abd8c2dbfdb6394101f31477a78242726c93"
 # Developer ID team for swiftDialog's signing cert (CSIRO — Bart Reardon).
 DIALOG_TEAM_ID="PWA5E9TQ59"
 # ------------------------------------------------------------------------------
