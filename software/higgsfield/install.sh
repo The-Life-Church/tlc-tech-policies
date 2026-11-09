@@ -31,9 +31,9 @@ set -euo pipefail
 # --- Pinned release ----------------------------------------------------------
 # Update all three lines together. SHAs come from checksums.txt on the
 # release page: https://github.com/higgsfield-ai/cli/releases
-HIGGSFIELD_VERSION="1.1.26"
-HIGGSFIELD_SHA256_ARM64="a0bff511a16833f32ea288e9f894ee1404326eb1414168397db8836ccdceed9b"
-HIGGSFIELD_SHA256_AMD64="be1f1ebd3de8addb89a2695b459a271378f94b865d10c05d40a682fca28e7968"
+HIGGSFIELD_VERSION="1.2.3"
+HIGGSFIELD_SHA256_ARM64="613d83b9288abdec08b85e0da984df62faf550e391976c7fe4468d5aa34daeae"
+HIGGSFIELD_SHA256_AMD64="c97c702127ed74381bd24eafdc8cf0b917d9c4a1ed1d512483a7676dd1d3fd2a"
 # ------------------------------------------------------------------------------
 
 ARCH=$(uname -m)
