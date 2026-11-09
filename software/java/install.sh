@@ -36,10 +36,10 @@ set -euo pipefail
 # --- Pinned release ----------------------------------------------------------
 # Eclipse Temurin JRE, LTS major. Bump via the temurin job in bump-pins.yml.
 TEMURIN_MAJOR="21"
-TEMURIN_VERSION="21.0.12.1"
-TEMURIN_BUILD="1"
-TEMURIN_SHA256_ARM64="9579143b583d98422435e45e6882b61a77cfb474f83876c9df83095fee4bcb0e"
-TEMURIN_SHA256_X64="4163e983893f70ffdc9819585cbb9c8ab0fb5add1f9dd909ca1c06cb54c7f7f5"
+TEMURIN_VERSION="21.0.13"
+TEMURIN_BUILD="9"
+TEMURIN_SHA256_ARM64="d7e0464f8e9e601fbcfaa9b40507271cacfcd04f5296b462339d74b7780b80d7"
+TEMURIN_SHA256_X64="a10496154d8684e55298ea8e70a31dce14d6505d659edc8124dfd519ca96f377"
 # ------------------------------------------------------------------------------
 
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
