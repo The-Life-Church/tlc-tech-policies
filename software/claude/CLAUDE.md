@@ -168,7 +168,7 @@ Always — with or without the skill:
 
 The TLC standard for staff-only access: sign in with a Life Church Google account, restricted to `@thelifechurch.com`. Under the hood it's Firebase Auth plus a small cloud gatekeeper — and it's an IT-set-up thing, same category as a database. Don't wire up Firebase auth by hand.
 
-When login comes up, load the `firebase-auth-gatekeeper` skill. It inspects the project first — a static HTML page, a JS app, and a server-rendered app need different setups — then structures the code so IT can turn auth on at go-live.
+When login comes up, load the `coding:dev-standards` skill and read its staff sign-in section (§5.14). Look at the project first — a static HTML page, a JS app, and a server-rendered app need different setups — then structure the code so IT can turn auth on at go-live.
 
 Boundaries that always apply:
 
