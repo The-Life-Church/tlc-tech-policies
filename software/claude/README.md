@@ -6,7 +6,7 @@ This folder contains TLC's Claude policy across every surface: Claude Code (CLI)
 |---|---|---|
 | `CLAUDE.md` | Claude Code (CLI on managed Macs) | Mosyle → `/etc/claude-code/CLAUDE.md`, daily refresh |
 | `ADMIN.md` | Claude.ai chat, Claude desktop app, Cowork (org-level framing) | Manually pasted into Claude admin console → Organization preferences (3000-char cap) |
-| `coding` plugin at [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) (private repo) — skills: `idea`, `going-live`, `command-blocked`, `github-repo-setup`, `resource-site` | Claude.ai chat, Claude desktop app, Cowork, Claude Code (intent-triggered skills; `CLAUDE.md` points at them) | Claude Code: plugin marketplace install (force-enabled via `managed-settings.json`). Chat + Cowork: admin-console GitHub sync from the private repo. |
+| `coding` plugin at [`tlc-claude-plugins`](https://github.com/The-Life-Church/tlc-claude-plugins) (private repo) — skills: `idea`, `going-live`, `command-blocked`, `github-repo-setup`, `resource-site`, `dev-standards` | Claude.ai chat, Claude desktop app, Cowork, Claude Code (intent-triggered skills; `CLAUDE.md` points at them) | Claude Code: plugin marketplace install (force-enabled via `managed-settings.json`). Chat + Cowork: admin-console GitHub sync from the private repo. |
 
 `CLAUDE.md` is long-form build-stage policy. `ADMIN.md` is short tone/routing framing that fits the admin console's character cap. The `coding` plugin's skills fill the gap: long-form situational content (kickoff, IT handoff, blocked commands, repo setup) that fires on intent, complementing the short admin-console block. They live in a private repo because the Claude.ai admin console only syncs skills from private GitHub sources.
 
@@ -20,9 +20,9 @@ The fleet `CLAUDE.md` keeps guardrails resident and points at plugin skills for 
 | `coding:going-live` | `coding/skills/going-live` | IT handoff: inspect codebase → interview → right-tool recheck → systems-request brief |
 | `coding:command-blocked` | `coding/skills/command-blocked` | Both restriction layers + next steps. Carries **no lists** — reads `managed-settings.json` and the shell policy from this repo live |
 | `coding:github-repo-setup` | `coding/skills/github-repo-setup` | First-time GitHub auth, fine-grained PATs, coworker sharing; fetches the `.gitignore` template below |
-| `firebase-auth-gatekeeper` (**no `coding:` prefix yet**) | **Not in the plugin yet.** It's a standalone skill outside `tlc-claude-plugins` | Staff-only sign-in: inspects the project's shape, then structures it so IT can turn auth on at go-live |
+| `coding:dev-standards` | `coding/skills/dev-standards` | The TLC Development Guidebook, one file per section. *Requiring a Login* points at its staff sign-in section (§5.14): look at the project's shape, then structure it so IT can turn auth on at go-live |
 
-**The gatekeeper pointer is deliberately unprefixed.** The planned move into the `coding` plugin is tracked in tlc-claude-plugins. When that lands, change the *Requiring a Login* pointer in `CLAUDE.md` to `coding:firebase-auth-gatekeeper` **in the same window**, and update this row. Renaming the pointer before the skill moves breaks login guidance on every Mac.
+**The login pointer names a section number.** *Requiring a Login* says §5.14. If the guidebook's security section is renumbered in tlc-claude-plugins, change the pointer in `CLAUDE.md` in the same window. The standalone `firebase-auth-gatekeeper` skill this pointer used to name is retired.
 
 The `coding` plugin also carries two skills `CLAUDE.md` doesn't point at directly. They're reached through `coding:idea`'s next-move menu (option 5, *publish it on the resources site*):
 
